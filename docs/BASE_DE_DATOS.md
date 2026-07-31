@@ -1,0 +1,79 @@
+# Base de datos de Gradia
+
+La base de datos se llama `gradia` y usa PostgreSQL. Las tablas y columnas fisicas estan en espanol, con `snake_case`, sin tildes, sin espacios, sin `ñ` y sin caracteres especiales.
+
+## Tablas
+
+1. `roles`: roles de acceso.
+2. `usuarios`: cuentas del sistema.
+3. `estudiantes`: perfil academico de estudiante.
+4. `docentes`: perfil academico de docente.
+5. `niveles_educativos`: niveles institucionales.
+6. `grados`: grados relacionados con niveles.
+7. `anios_academicos`: vigencias academicas.
+8. `periodos_academicos`: periodos de cada ano.
+9. `areas_academicas`: agrupaciones generales del conocimiento.
+10. `asignaturas`: materias calificables asociadas a areas.
+11. `planes_estudio`: versiones de plan curricular.
+12. `areas_plan_estudio`: areas configuradas por plan y grado.
+13. `detalle_plan_estudio`: asignaturas de cada area del plan.
+14. `grupos`: grupos por grado, ano academico y plan.
+15. `matriculas`: estudiantes en grupos; el ano se obtiene por `matricula -> grupo -> anio_academico`.
+16. `asignaciones_academicas`: docentes asignados a un detalle de plan y grupo.
+17. `actividades_evaluativas`: actividades por asignacion y periodo.
+18. `calificaciones`: notas por estudiante y actividad.
+19. `configuraciones_academicas`: escala de notas por ano.
+20. `historial_calificaciones`: cambios de notas.
+21. `registros_auditoria`: bitacora de operaciones sensibles.
+
+## Relaciones principales
+
+```text
+roles 1 -> N usuarios
+usuarios 1 -> 1 estudiantes
+usuarios 1 -> 1 docentes
+niveles_educativos 1 -> N grados
+anios_academicos 1 -> N periodos_academicos
+areas_academicas 1 -> N asignaturas
+planes_estudio 1 -> N areas_plan_estudio
+grados 1 -> N areas_plan_estudio
+areas_plan_estudio 1 -> N detalle_plan_estudio
+asignaturas 1 -> N detalle_plan_estudio
+grupos 1 -> N matriculas
+docentes 1 -> N asignaciones_academicas
+detalle_plan_estudio 1 -> N asignaciones_academicas
+asignaciones_academicas 1 -> N actividades_evaluativas
+actividades_evaluativas 1 -> N calificaciones
+calificaciones 1 -> N historial_calificaciones
+```
+
+## Restricciones en PostgreSQL
+
+- Correo unico por usuario.
+- Numero de documento unico.
+- Codigo de estudiante unico.
+- Codigo de docente unico.
+- Codigo de area unico.
+- Codigo de asignatura unico.
+- Un solo ano academico activo mediante indice unico parcial.
+- Una sola calificacion por estudiante y actividad.
+- Una configuracion academica por ano.
+- Una combinacion unica de plan, grado y area.
+- Una combinacion unica de area del plan y asignatura.
+- Una asignacion academica activa identica mediante indice unico parcial.
+- Un docente principal activo por asignatura configurada y grupo mediante indice unico parcial.
+- Checks basicos para porcentajes, intensidad horaria, cupo maximo y escala de notas.
+
+## Reglas aplicadas desde servicios
+
+- Una matricula activa por estudiante y ano academico, consultando el ano por medio del grupo.
+- Fechas de periodos dentro del ano academico.
+- Suma de porcentajes de periodos antes de activar o finalizar la configuracion.
+- Suma de `porcentaje_area` igual a 100 antes de activar un plan.
+- Coherencia entre grado del grupo y grado configurado en el plan.
+- Rango de nota segun `configuraciones_academicas`.
+- Suma de porcentajes de actividades por asignacion y periodo.
+
+## Politica de eliminacion
+
+No se usa eliminacion en cascada indiscriminada. Los registros academicos se conservan con `Restrict` o `SetNull` cuando corresponde. Usuarios, estudiantes, docentes, planes, matriculas, asignaciones, actividades, calificaciones e historiales deben preservarse.

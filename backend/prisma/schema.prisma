@@ -1,0 +1,449 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoEstudiante {
+  ACTIVO
+  RETIRADO
+  GRADUADO
+}
+
+enum EstadoDocente {
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoAnioAcademico {
+  PLANEADO
+  ACTIVO
+  FINALIZADO
+}
+
+enum EstadoPeriodoAcademico {
+  PENDIENTE
+  ABIERTO
+  CERRADO
+}
+
+enum EstadoPlanEstudio {
+  BORRADOR
+  ACTIVO
+  FINALIZADO
+}
+
+enum ModalidadEvaluacion {
+  INTEGRADA
+  DESGLOSADA
+}
+
+enum JornadaGrupo {
+  MANANA
+  TARDE
+  UNICA
+}
+
+enum EstadoMatricula {
+  ACTIVA
+  RETIRADA
+  CANCELADA
+  FINALIZADA
+}
+
+enum TipoAsignacion {
+  PRINCIPAL
+  APOYO
+}
+
+enum EstadoAsignacion {
+  ACTIVA
+  FINALIZADA
+  REEMPLAZADA
+}
+
+enum EstadoActividad {
+  BORRADOR
+  PUBLICADA
+  CERRADA
+}
+
+enum EstadoCalificacion {
+  BORRADOR
+  PUBLICADA
+}
+
+model Rol {
+  id            BigInt    @id @default(autoincrement())
+  nombre        String    @unique @db.VarChar(50)
+  descripcion   String?
+  estado        Boolean   @default(true)
+  creadoEn      DateTime  @default(now()) @map("creado_en")
+  actualizadoEn DateTime  @updatedAt @map("actualizado_en")
+  usuarios      Usuario[]
+
+  @@map("roles")
+}
+
+model Usuario {
+  id                        BigInt                  @id @default(autoincrement())
+  idRol                     BigInt                  @map("id_rol")
+  nombres                   String                  @db.VarChar(100)
+  apellidos                 String                  @db.VarChar(100)
+  tipoDocumento             String                  @map("tipo_documento") @db.VarChar(30)
+  numeroDocumento           String                  @unique @map("numero_documento") @db.VarChar(30)
+  correo                    String                  @unique @db.VarChar(150)
+  contrasenaHash            String                  @map("contrasena_hash") @db.VarChar(255)
+  estado                    Boolean                 @default(true)
+  ultimoAcceso              DateTime?               @map("ultimo_acceso")
+  creadoEn                  DateTime                @default(now()) @map("creado_en")
+  actualizadoEn             DateTime                @updatedAt @map("actualizado_en")
+  rol                       Rol                     @relation(fields: [idRol], references: [id], onDelete: Restrict)
+  estudiante                Estudiante?
+  docente                   Docente?
+  actividadesCreadas        ActividadEvaluativa[]   @relation("actividades_creadas")
+  calificacionesRegistradas Calificacion[]          @relation("calificaciones_registradas")
+  calificacionesModificadas Calificacion[]          @relation("calificaciones_modificadas")
+  historialCalificaciones   HistorialCalificacion[]
+  registrosAuditoria        RegistroAuditoria[]
+
+  @@map("usuarios")
+}
+
+model Estudiante {
+  id               BigInt           @id @default(autoincrement())
+  idUsuario        BigInt           @unique @map("id_usuario")
+  codigoEstudiante String           @unique @map("codigo_estudiante") @db.VarChar(30)
+  fechaNacimiento  DateTime         @map("fecha_nacimiento") @db.Date
+  telefono         String?          @db.VarChar(30)
+  direccion        String?          @db.VarChar(200)
+  estado           EstadoEstudiante @default(ACTIVO)
+  creadoEn         DateTime         @default(now()) @map("creado_en")
+  actualizadoEn    DateTime         @updatedAt @map("actualizado_en")
+  usuario          Usuario          @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
+  matriculas       Matricula[]
+  calificaciones   Calificacion[]
+
+  @@map("estudiantes")
+}
+
+model Docente {
+  id                     BigInt                @id @default(autoincrement())
+  idUsuario              BigInt                @unique @map("id_usuario")
+  codigoDocente          String                @unique @map("codigo_docente") @db.VarChar(30)
+  especialidad           String?               @db.VarChar(150)
+  telefono               String?               @db.VarChar(30)
+  estado                 EstadoDocente         @default(ACTIVO)
+  creadoEn               DateTime              @default(now()) @map("creado_en")
+  actualizadoEn          DateTime              @updatedAt @map("actualizado_en")
+  usuario                Usuario               @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
+  gruposDirigidos        Grupo[]               @relation("docente_director")
+  asignacionesAcademicas AsignacionAcademica[]
+
+  @@map("docentes")
+}
+
+model NivelEducativo {
+  id            BigInt   @id @default(autoincrement())
+  nombre        String   @unique @db.VarChar(80)
+  descripcion   String?
+  orden         Int      @unique
+  estado        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+  grados        Grado[]
+
+  @@map("niveles_educativos")
+}
+
+model Grado {
+  id               BigInt            @id @default(autoincrement())
+  idNivelEducativo BigInt            @map("id_nivel_educativo")
+  nombre           String            @db.VarChar(50)
+  numeroGrado      Int               @unique @map("numero_grado")
+  orden            Int
+  estado           Boolean           @default(true)
+  creadoEn         DateTime          @default(now()) @map("creado_en")
+  actualizadoEn    DateTime          @updatedAt @map("actualizado_en")
+  nivelEducativo   NivelEducativo    @relation(fields: [idNivelEducativo], references: [id], onDelete: Restrict)
+  areasPlanEstudio AreaPlanEstudio[]
+  grupos           Grupo[]
+
+  @@map("grados")
+}
+
+model AnioAcademico {
+  id                     BigInt                  @id @default(autoincrement())
+  nombre                 String                  @unique @db.VarChar(20)
+  fechaInicio            DateTime                @map("fecha_inicio") @db.Date
+  fechaFin               DateTime                @map("fecha_fin") @db.Date
+  estado                 EstadoAnioAcademico     @default(PLANEADO)
+  creadoEn               DateTime                @default(now()) @map("creado_en")
+  actualizadoEn          DateTime                @updatedAt @map("actualizado_en")
+  periodosAcademicos     PeriodoAcademico[]
+  grupos                 Grupo[]
+  configuracionAcademica ConfiguracionAcademica?
+
+  @@map("anios_academicos")
+}
+
+model PeriodoAcademico {
+  id              BigInt                 @id @default(autoincrement())
+  idAnioAcademico BigInt                 @map("id_anio_academico")
+  nombre          String                 @db.VarChar(50)
+  numeroPeriodo   Int                    @map("numero_periodo")
+  fechaInicio     DateTime               @map("fecha_inicio") @db.Date
+  fechaFin        DateTime               @map("fecha_fin") @db.Date
+  porcentaje      Decimal                @db.Decimal(5, 2)
+  estado          EstadoPeriodoAcademico @default(PENDIENTE)
+  creadoEn        DateTime               @default(now()) @map("creado_en")
+  actualizadoEn   DateTime               @updatedAt @map("actualizado_en")
+  anioAcademico   AnioAcademico          @relation(fields: [idAnioAcademico], references: [id], onDelete: Restrict)
+  actividades     ActividadEvaluativa[]
+
+  @@unique([idAnioAcademico, numeroPeriodo])
+  @@map("periodos_academicos")
+}
+
+model AreaAcademica {
+  id               BigInt            @id @default(autoincrement())
+  codigo           String            @unique @db.VarChar(20)
+  nombre           String            @unique @db.VarChar(100)
+  descripcion      String?
+  estado           Boolean           @default(true)
+  creadoEn         DateTime          @default(now()) @map("creado_en")
+  actualizadoEn    DateTime          @updatedAt @map("actualizado_en")
+  asignaturas      Asignatura[]
+  areasPlanEstudio AreaPlanEstudio[]
+
+  @@map("areas_academicas")
+}
+
+model Asignatura {
+  id              BigInt               @id @default(autoincrement())
+  idAreaAcademica BigInt               @map("id_area_academica")
+  codigo          String               @unique @db.VarChar(20)
+  nombre          String               @db.VarChar(100)
+  descripcion     String?
+  estado          Boolean              @default(true)
+  creadoEn        DateTime             @default(now()) @map("creado_en")
+  actualizadoEn   DateTime             @updatedAt @map("actualizado_en")
+  areaAcademica   AreaAcademica        @relation(fields: [idAreaAcademica], references: [id], onDelete: Restrict)
+  detallePlan     DetallePlanEstudio[]
+
+  @@map("asignaturas")
+}
+
+model PlanEstudio {
+  id                  BigInt            @id @default(autoincrement())
+  nombre              String            @db.VarChar(150)
+  version             String            @db.VarChar(30)
+  descripcion         String?
+  fechaInicioVigencia DateTime          @map("fecha_inicio_vigencia") @db.Date
+  fechaFinVigencia    DateTime?         @map("fecha_fin_vigencia") @db.Date
+  estado              EstadoPlanEstudio @default(BORRADOR)
+  creadoEn            DateTime          @default(now()) @map("creado_en")
+  actualizadoEn       DateTime          @updatedAt @map("actualizado_en")
+  areasPlanEstudio    AreaPlanEstudio[]
+  grupos              Grupo[]
+
+  @@unique([nombre, version])
+  @@map("planes_estudio")
+}
+
+model AreaPlanEstudio {
+  id                  BigInt               @id @default(autoincrement())
+  idPlanEstudio       BigInt               @map("id_plan_estudio")
+  idGrado             BigInt               @map("id_grado")
+  idAreaAcademica     BigInt               @map("id_area_academica")
+  modalidadEvaluacion ModalidadEvaluacion  @map("modalidad_evaluacion")
+  calcularNotaArea    Boolean              @default(true) @map("calcular_nota_area")
+  mostrarAreaBoletin  Boolean              @default(true) @map("mostrar_area_boletin")
+  ordenVisualizacion  Int                  @map("orden_visualizacion")
+  estado              Boolean              @default(true)
+  creadoEn            DateTime             @default(now()) @map("creado_en")
+  actualizadoEn       DateTime             @updatedAt @map("actualizado_en")
+  planEstudio         PlanEstudio          @relation(fields: [idPlanEstudio], references: [id], onDelete: Restrict)
+  grado               Grado                @relation(fields: [idGrado], references: [id], onDelete: Restrict)
+  areaAcademica       AreaAcademica        @relation(fields: [idAreaAcademica], references: [id], onDelete: Restrict)
+  detalles            DetallePlanEstudio[]
+
+  @@unique([idPlanEstudio, idGrado, idAreaAcademica])
+  @@map("areas_plan_estudio")
+}
+
+model DetallePlanEstudio {
+  id                       BigInt                @id @default(autoincrement())
+  idAreaPlanEstudio        BigInt                @map("id_area_plan_estudio")
+  idAsignatura             BigInt                @map("id_asignatura")
+  intensidadHorariaSemanal Int                   @map("intensidad_horaria_semanal")
+  porcentajeArea           Decimal?              @map("porcentaje_area") @db.Decimal(5, 2)
+  obligatoria              Boolean               @default(true)
+  calificable              Boolean               @default(true)
+  mostrarEnBoletin         Boolean               @default(true) @map("mostrar_en_boletin")
+  ordenVisualizacion       Int                   @map("orden_visualizacion")
+  estado                   Boolean               @default(true)
+  creadoEn                 DateTime              @default(now()) @map("creado_en")
+  actualizadoEn            DateTime              @updatedAt @map("actualizado_en")
+  areaPlanEstudio          AreaPlanEstudio       @relation(fields: [idAreaPlanEstudio], references: [id], onDelete: Restrict)
+  asignatura               Asignatura            @relation(fields: [idAsignatura], references: [id], onDelete: Restrict)
+  asignacionesAcademicas   AsignacionAcademica[]
+
+  @@unique([idAreaPlanEstudio, idAsignatura])
+  @@map("detalle_plan_estudio")
+}
+
+model Grupo {
+  id                     BigInt                @id @default(autoincrement())
+  idGrado                BigInt                @map("id_grado")
+  idAnioAcademico        BigInt                @map("id_anio_academico")
+  idPlanEstudio          BigInt                @map("id_plan_estudio")
+  idDocenteDirector      BigInt?               @map("id_docente_director")
+  nombre                 String                @db.VarChar(20)
+  jornada                JornadaGrupo
+  cupoMaximo             Int                   @map("cupo_maximo")
+  estado                 Boolean               @default(true)
+  creadoEn               DateTime              @default(now()) @map("creado_en")
+  actualizadoEn          DateTime              @updatedAt @map("actualizado_en")
+  grado                  Grado                 @relation(fields: [idGrado], references: [id], onDelete: Restrict)
+  anioAcademico          AnioAcademico         @relation(fields: [idAnioAcademico], references: [id], onDelete: Restrict)
+  planEstudio            PlanEstudio           @relation(fields: [idPlanEstudio], references: [id], onDelete: Restrict)
+  docenteDirector        Docente?              @relation("docente_director", fields: [idDocenteDirector], references: [id], onDelete: SetNull)
+  matriculas             Matricula[]
+  asignacionesAcademicas AsignacionAcademica[]
+
+  @@unique([idGrado, idAnioAcademico, nombre])
+  @@map("grupos")
+}
+
+model Matricula {
+  id             BigInt          @id @default(autoincrement())
+  idEstudiante   BigInt          @map("id_estudiante")
+  idGrupo        BigInt          @map("id_grupo")
+  fechaMatricula DateTime        @map("fecha_matricula") @db.Date
+  fechaRetiro    DateTime?       @map("fecha_retiro") @db.Date
+  motivoRetiro   String?         @map("motivo_retiro")
+  estado         EstadoMatricula @default(ACTIVA)
+  creadoEn       DateTime        @default(now()) @map("creado_en")
+  actualizadoEn  DateTime        @updatedAt @map("actualizado_en")
+  estudiante     Estudiante      @relation(fields: [idEstudiante], references: [id], onDelete: Restrict)
+  grupo          Grupo           @relation(fields: [idGrupo], references: [id], onDelete: Restrict)
+
+  @@index([idEstudiante])
+  @@index([idGrupo])
+  @@map("matriculas")
+}
+
+model AsignacionAcademica {
+  id                   BigInt                @id @default(autoincrement())
+  idDocente            BigInt                @map("id_docente")
+  idDetallePlanEstudio BigInt                @map("id_detalle_plan_estudio")
+  idGrupo              BigInt                @map("id_grupo")
+  tipoAsignacion       TipoAsignacion        @map("tipo_asignacion")
+  fechaInicio          DateTime              @map("fecha_inicio") @db.Date
+  fechaFin             DateTime?             @map("fecha_fin") @db.Date
+  estado               EstadoAsignacion      @default(ACTIVA)
+  creadoEn             DateTime              @default(now()) @map("creado_en")
+  actualizadoEn        DateTime              @updatedAt @map("actualizado_en")
+  docente              Docente               @relation(fields: [idDocente], references: [id], onDelete: Restrict)
+  detallePlanEstudio   DetallePlanEstudio    @relation(fields: [idDetallePlanEstudio], references: [id], onDelete: Restrict)
+  grupo                Grupo                 @relation(fields: [idGrupo], references: [id], onDelete: Restrict)
+  actividades          ActividadEvaluativa[]
+
+  @@index([idDocente])
+  @@index([idDetallePlanEstudio])
+  @@index([idGrupo])
+  @@map("asignaciones_academicas")
+}
+
+model ActividadEvaluativa {
+  id                    BigInt              @id @default(autoincrement())
+  idAsignacionAcademica BigInt              @map("id_asignacion_academica")
+  idPeriodoAcademico    BigInt              @map("id_periodo_academico")
+  nombre                String              @db.VarChar(150)
+  descripcion           String?
+  fechaActividad        DateTime            @map("fecha_actividad") @db.Date
+  porcentaje            Decimal             @db.Decimal(5, 2)
+  estado                EstadoActividad     @default(BORRADOR)
+  creadoPorId           BigInt              @map("creado_por")
+  creadoEn              DateTime            @default(now()) @map("creado_en")
+  actualizadoEn         DateTime            @updatedAt @map("actualizado_en")
+  asignacionAcademica   AsignacionAcademica @relation(fields: [idAsignacionAcademica], references: [id], onDelete: Restrict)
+  periodoAcademico      PeriodoAcademico    @relation(fields: [idPeriodoAcademico], references: [id], onDelete: Restrict)
+  creadoPor             Usuario             @relation("actividades_creadas", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  calificaciones        Calificacion[]
+
+  @@index([idAsignacionAcademica, idPeriodoAcademico])
+  @@map("actividades_evaluativas")
+}
+
+model Calificacion {
+  id                    BigInt                  @id @default(autoincrement())
+  idActividadEvaluativa BigInt                  @map("id_actividad_evaluativa")
+  idEstudiante          BigInt                  @map("id_estudiante")
+  nota                  Decimal                 @db.Decimal(5, 2)
+  observacion           String?
+  estado                EstadoCalificacion      @default(BORRADOR)
+  registradaPorId       BigInt                  @map("registrada_por")
+  modificadaPorId       BigInt?                 @map("modificada_por")
+  fechaPublicacion      DateTime?               @map("fecha_publicacion")
+  creadoEn              DateTime                @default(now()) @map("creado_en")
+  actualizadoEn         DateTime                @updatedAt @map("actualizado_en")
+  actividadEvaluativa   ActividadEvaluativa     @relation(fields: [idActividadEvaluativa], references: [id], onDelete: Restrict)
+  estudiante            Estudiante              @relation(fields: [idEstudiante], references: [id], onDelete: Restrict)
+  registradaPor         Usuario                 @relation("calificaciones_registradas", fields: [registradaPorId], references: [id], onDelete: Restrict)
+  modificadaPor         Usuario?                @relation("calificaciones_modificadas", fields: [modificadaPorId], references: [id], onDelete: SetNull)
+  historial             HistorialCalificacion[]
+
+  @@unique([idActividadEvaluativa, idEstudiante])
+  @@map("calificaciones")
+}
+
+model ConfiguracionAcademica {
+  id                BigInt        @id @default(autoincrement())
+  idAnioAcademico   BigInt        @unique @map("id_anio_academico")
+  notaMinima        Decimal       @map("nota_minima") @db.Decimal(5, 2)
+  notaMaxima        Decimal       @map("nota_maxima") @db.Decimal(5, 2)
+  notaAprobacion    Decimal       @map("nota_aprobacion") @db.Decimal(5, 2)
+  cantidadDecimales Int           @map("cantidad_decimales")
+  estado            Boolean       @default(true)
+  creadoEn          DateTime      @default(now()) @map("creado_en")
+  actualizadoEn     DateTime      @updatedAt @map("actualizado_en")
+  anioAcademico     AnioAcademico @relation(fields: [idAnioAcademico], references: [id], onDelete: Restrict)
+
+  @@map("configuraciones_academicas")
+}
+
+model HistorialCalificacion {
+  id             BigInt       @id @default(autoincrement())
+  idCalificacion BigInt       @map("id_calificacion")
+  notaAnterior   Decimal      @map("nota_anterior") @db.Decimal(5, 2)
+  notaNueva      Decimal      @map("nota_nueva") @db.Decimal(5, 2)
+  motivo         String
+  idUsuario      BigInt       @map("id_usuario")
+  fechaCambio    DateTime     @default(now()) @map("fecha_cambio")
+  calificacion   Calificacion @relation(fields: [idCalificacion], references: [id], onDelete: Restrict)
+  usuario        Usuario      @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
+
+  @@map("historial_calificaciones")
+}
+
+model RegistroAuditoria {
+  id              BigInt   @id @default(autoincrement())
+  idUsuario       BigInt?  @map("id_usuario")
+  accion          String   @db.VarChar(100)
+  modulo          String   @db.VarChar(100)
+  tablaAfectada   String   @map("tabla_afectada") @db.VarChar(100)
+  idRegistro      BigInt?  @map("id_registro")
+  datosAnteriores Json?    @map("datos_anteriores") @db.JsonB
+  datosNuevos     Json?    @map("datos_nuevos") @db.JsonB
+  direccionIp     String?  @map("direccion_ip") @db.VarChar(50)
+  creadoEn        DateTime @default(now()) @map("creado_en")
+  usuario         Usuario? @relation(fields: [idUsuario], references: [id], onDelete: SetNull)
+
+  @@index([tablaAfectada, idRegistro])
+  @@map("registros_auditoria")
+}
