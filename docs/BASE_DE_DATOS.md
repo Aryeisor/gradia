@@ -73,6 +73,15 @@ calificaciones 1 -> N historial_calificaciones
 - Coherencia entre grado del grupo y grado configurado en el plan.
 - Rango de nota segun `configuraciones_academicas`.
 - Suma de porcentajes de actividades por asignacion y periodo.
+- Coherencia entre rol de usuario y perfil de estudiante o docente.
+- Coherencia de area entre asignatura y area del plan.
+- Estado activo de docente, grupo, detalle, asignacion, estudiante y matricula cuando aplique.
+- Pertenencia del periodo al ano del grupo y estado abierto del periodo.
+- Unicidad de calificacion y retiro del estudiante respecto de la fecha de actividad.
+
+## Indices de consulta
+
+La migracion `ajustes_arquitectura_pre_autenticacion` agrega indices no destructivos para las relaciones de usuarios, grados, asignaturas, areas y detalles del plan, grupos, calificaciones, historial y auditoria. No se duplicaron los indices existentes de matriculas ni los indices compuestos cuyo primer campo ya cubre periodos, planes, detalles o grados.
 
 ## Politica de eliminacion
 

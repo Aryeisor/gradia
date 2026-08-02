@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
@@ -110,20 +111,43 @@ async function main() {
     });
   }
 
-  if (process.env.ADMIN_INICIAL_CORREO && process.env.ADMIN_INICIAL_CONTRASENA) {
+  const variablesAdministrador = z
+    .object({
+      correo: z.string().email().optional(),
+      contrasena: z.string().min(12).optional()
+    })
+    .superRefine((datos, contexto) => {
+      if ((datos.correo === undefined) !== (datos.contrasena === undefined)) {
+        contexto.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'ADMIN_INICIAL_CORREO y ADMIN_INICIAL_CONTRASENA deben definirse juntos'
+        });
+      }
+    })
+    .parse({
+      correo: process.env.ADMIN_INICIAL_CORREO || undefined,
+      contrasena: process.env.ADMIN_INICIAL_CONTRASENA || undefined
+    });
+
+  if (variablesAdministrador.correo && variablesAdministrador.contrasena) {
     const rolAdministrador = await prisma.rol.findUniqueOrThrow({ where: { nombre: 'Administrador' } });
-    const contrasenaHash = await bcrypt.hash(process.env.ADMIN_INICIAL_CONTRASENA, 10);
+    const contrasenaHash = await bcrypt.hash(variablesAdministrador.contrasena, 10);
 
     await prisma.usuario.upsert({
-      where: { correo: process.env.ADMIN_INICIAL_CORREO },
-      update: { idRol: rolAdministrador.id, contrasenaHash, estado: true },
+      where: { numeroDocumento: 'ADMIN-GRADIA' },
+      update: {
+        idRol: rolAdministrador.id,
+        correo: variablesAdministrador.correo,
+        contrasenaHash,
+        estado: true
+      },
       create: {
         idRol: rolAdministrador.id,
         nombres: 'Administrador',
         apellidos: 'Gradia',
         tipoDocumento: 'NIT',
         numeroDocumento: 'ADMIN-GRADIA',
-        correo: process.env.ADMIN_INICIAL_CORREO,
+        correo: variablesAdministrador.correo,
         contrasenaHash
       }
     });
