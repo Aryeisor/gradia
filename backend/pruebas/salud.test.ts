@@ -26,7 +26,7 @@ describe('API de salud', () => {
     const respuesta = await request(crearAplicacion()).get('/api/salud');
 
     expect(respuesta.status).toBe(200);
-    expect(respuesta.body.datos.base_datos).toBe('conectada');
+    expect(respuesta.body.datos.baseDatos).toBe('conectada');
   });
 
   it('responde 503 cuando PostgreSQL no esta disponible', async () => {
@@ -35,6 +35,7 @@ describe('API de salud', () => {
 
     expect(respuesta.status).toBe(503);
     expect(respuesta.body.exito).toBe(false);
+    expect(respuesta.body.datos).toEqual({ api: 'operativa', baseDatos: 'desconectada' });
   });
 
   it('responde ruta no encontrada', async () => {

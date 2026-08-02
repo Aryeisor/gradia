@@ -1,23 +1,18 @@
 import { Request, Response } from 'express';
 import { verificarSalud } from './salud.servicio.js';
+import { responderError, responderExito } from '../../compartido/respuestas/respuesta-api.js';
 
 export async function consultarSalud(_req: Request, res: Response) {
   const resultado = await verificarSalud();
 
   if (!resultado.baseDatosConectada) {
-    return res.status(503).json({
-      exito: false,
-      mensaje: 'La API esta disponible, pero no fue posible conectar con PostgreSQL',
-      errores: []
+    return responderError(res, 503, 'La API esta disponible, pero no fue posible conectar con PostgreSQL', {
+      datos: { api: 'operativa', baseDatos: 'desconectada' }
     });
   }
 
-  return res.json({
-    exito: true,
-    mensaje: 'Servicios de Gradia disponibles',
-    datos: {
-      api: 'operativa',
-      base_datos: 'conectada'
-    }
+  return responderExito(res, 'Servicios de Gradia disponibles', {
+    api: 'operativa',
+    baseDatos: 'conectada'
   });
 }

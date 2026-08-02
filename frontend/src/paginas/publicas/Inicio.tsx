@@ -1,6 +1,6 @@
 import { Activity, AlertTriangle, CheckCircle2, ServerCrash } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { consultarSalud } from '../../servicios/salud.service';
+import { consultarSalud, EstadoServicios } from '../../servicios/salud.service';
 
 export function Inicio() {
   const consulta = useQuery({
@@ -8,7 +8,9 @@ export function Inicio() {
     queryFn: consultarSalud
   });
 
-  const estado = obtenerEstado(consulta.status, consulta.data?.datos?.base_datos);
+  const estadoServicios: EstadoServicios =
+    consulta.status === 'pending' ? 'comprobando' : (consulta.data?.estado ?? 'api-no-disponible');
+  const estado = obtenerEstado(estadoServicios);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -37,8 +39,8 @@ export function Inicio() {
   );
 }
 
-function obtenerEstado(status: string, baseDatos?: string) {
-  if (status === 'pending') {
+function obtenerEstado(estado: EstadoServicios) {
+  if (estado === 'comprobando') {
     return {
       titulo: 'Comprobando servicios',
       descripcion: 'Consultando la API REST de Gradia.',
@@ -46,7 +48,7 @@ function obtenerEstado(status: string, baseDatos?: string) {
     };
   }
 
-  if (status === 'error') {
+  if (estado === 'api-no-disponible') {
     return {
       titulo: 'API no disponible',
       descripcion: 'No fue posible consultar el backend de Gradia.',
@@ -54,7 +56,7 @@ function obtenerEstado(status: string, baseDatos?: string) {
     };
   }
 
-  if (baseDatos === 'conectada') {
+  if (estado === 'disponibles') {
     return {
       titulo: 'API disponible y base de datos conectada',
       descripcion: 'Express, Prisma y PostgreSQL respondieron correctamente.',

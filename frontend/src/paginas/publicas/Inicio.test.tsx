@@ -1,26 +1,40 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { consultarSalud } from '../../servicios/salud.service';
 import { Inicio } from './Inicio';
 
-vi.mock('../../servicios/salud.service', () => ({
-  consultarSalud: vi.fn(async () => ({
-    exito: true,
-    mensaje: 'Servicios de Gradia disponibles',
-    datos: { api: 'operativa', base_datos: 'conectada' }
-  }))
-}));
+vi.mock('../../servicios/salud.service', () => ({ consultarSalud: vi.fn() }));
 
-describe('Inicio', () => {
-  it('renderiza la presentacion de Gradia', async () => {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    render(
-      <QueryClientProvider client={queryClient}>
-        <Inicio />
-      </QueryClientProvider>
-    );
+function renderizar() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={queryClient}><Inicio /></QueryClientProvider>);
+}
 
-    expect(screen.getByRole('heading', { name: 'Gradia' })).toBeInTheDocument();
+describe('estado visual de servicios', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('muestra el estado de carga', () => {
+    vi.mocked(consultarSalud).mockReturnValue(new Promise(() => undefined));
+    renderizar();
+    expect(screen.getByText('Comprobando servicios')).toBeInTheDocument();
+  });
+
+  it('muestra API y base de datos disponibles', async () => {
+    vi.mocked(consultarSalud).mockResolvedValue({ estado: 'disponibles', mensaje: 'ok' });
+    renderizar();
     expect(await screen.findByText('API disponible y base de datos conectada')).toBeInTheDocument();
+  });
+
+  it('diferencia PostgreSQL desconectado de una API caida', async () => {
+    vi.mocked(consultarSalud).mockResolvedValue({ estado: 'base-datos-desconectada', mensaje: 'sin base' });
+    renderizar();
+    expect(await screen.findByText('API disponible, pero base de datos desconectada')).toBeInTheDocument();
+  });
+
+  it('muestra API no disponible ante un error de red', async () => {
+    vi.mocked(consultarSalud).mockResolvedValue({ estado: 'api-no-disponible', mensaje: 'sin red' });
+    renderizar();
+    expect(await screen.findByText('API no disponible')).toBeInTheDocument();
   });
 });

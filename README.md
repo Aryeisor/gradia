@@ -8,7 +8,7 @@ Gradia: Sistema Web de Gestion Academica y Registro de Calificaciones.
 - npm 10 o superior.
 - PostgreSQL 16 o superior.
 
-En este equipo se detecto Node.js `v24.14.1`, npm `11.11.0`, Git `2.53.0.windows.2` y un servicio PostgreSQL activo llamado `postgresql-x64-18`.
+En este equipo se verifico Node.js `v22.20.0`, npm `10.9.3` y un servicio PostgreSQL activo llamado `postgresql-x64-18`.
 
 ## Configuracion inicial
 
@@ -50,6 +50,15 @@ En este equipo se detecto Node.js `v24.14.1`, npm `11.11.0`, Git `2.53.0.windows
    npm run dev
    ```
 
+## Produccion local
+
+```bash
+npm run build
+npm run start --workspace=backend
+```
+
+El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `backend/dist/servidor.js`. Pruebas, seeders y migraciones no forman parte del artefacto de produccion. SIGINT y SIGTERM cierran HTTP y Prisma de forma controlada.
+
 ## Scripts
 
 - `npm run dev`: inicia frontend y backend.
@@ -58,11 +67,35 @@ En este equipo se detecto Node.js `v24.14.1`, npm `11.11.0`, Git `2.53.0.windows
 - `npm run lint`: valida estilo de codigo.
 - `npm run test`: ejecuta pruebas minimas.
 - `npm run build`: compila backend y frontend.
+- `npm run start --workspace=backend`: inicia el backend compilado.
 - `npm run db:generate`: genera Prisma Client.
 - `npm run db:migrate`: aplica migraciones.
 - `npm run db:seed`: ejecuta datos iniciales idempotentes.
 - `npm run db:studio`: abre Prisma Studio.
 - `npm run db:status`: muestra estado de migraciones.
+
+## Contrato de API y salud
+
+- `BigInt` y `Decimal` se entregan como string; las fechas se entregan en ISO 8601.
+- Los errores usan `{ exito, mensaje, errores, codigo? }` y no exponen detalles internos.
+- `/api/salud` devuelve 200 con todos los servicios disponibles y 503 si la API responde pero PostgreSQL esta desconectado.
+- El frontend reserva “API no disponible” para errores de red, timeout o ausencia de respuesta.
+
+Las variables `ADMIN_INICIAL_CORREO` y `ADMIN_INICIAL_CONTRASENA` son opcionales como conjunto. Si se configura una, debe configurarse la otra; la contrasena debe tener al menos 12 caracteres y no usar marcadores inseguros en produccion.
+
+## Comprobacion
+
+```bash
+npm install
+npm run db:generate
+npm run db:migrate
+npm run db:status
+npm run lint
+npm run test
+npm run build
+```
+
+La arquitectura contiene validaciones reutilizables de coherencia academica, pero todavia no implementa autenticacion, JWT, permisos ni CRUD academicos.
 
 ## Estructura
 

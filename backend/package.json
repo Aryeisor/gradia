@@ -6,7 +6,8 @@
   "main": "dist/servidor.js",
   "scripts": {
     "dev": "tsx watch src/servidor.ts",
-    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "start": "node dist/servidor.js",
     "lint": "eslint . --ext .ts",
     "test": "vitest run",

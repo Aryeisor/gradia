@@ -110,6 +110,7 @@ model Usuario {
   historialCalificaciones   HistorialCalificacion[]
   registrosAuditoria        RegistroAuditoria[]
 
+  @@index([idRol])
   @@map("usuarios")
 }
 
@@ -172,6 +173,7 @@ model Grado {
   areasPlanEstudio AreaPlanEstudio[]
   grupos           Grupo[]
 
+  @@index([idNivelEducativo])
   @@map("grados")
 }
 
@@ -234,6 +236,7 @@ model Asignatura {
   areaAcademica   AreaAcademica        @relation(fields: [idAreaAcademica], references: [id], onDelete: Restrict)
   detallePlan     DetallePlanEstudio[]
 
+  @@index([idAreaAcademica])
   @@map("asignaturas")
 }
 
@@ -272,6 +275,8 @@ model AreaPlanEstudio {
   detalles            DetallePlanEstudio[]
 
   @@unique([idPlanEstudio, idGrado, idAreaAcademica])
+  @@index([idGrado])
+  @@index([idAreaAcademica])
   @@map("areas_plan_estudio")
 }
 
@@ -293,6 +298,7 @@ model DetallePlanEstudio {
   asignacionesAcademicas   AsignacionAcademica[]
 
   @@unique([idAreaPlanEstudio, idAsignatura])
+  @@index([idAsignatura])
   @@map("detalle_plan_estudio")
 }
 
@@ -316,6 +322,8 @@ model Grupo {
   asignacionesAcademicas AsignacionAcademica[]
 
   @@unique([idGrado, idAnioAcademico, nombre])
+  @@index([idAnioAcademico])
+  @@index([idPlanEstudio])
   @@map("grupos")
 }
 
@@ -399,6 +407,7 @@ model Calificacion {
   historial             HistorialCalificacion[]
 
   @@unique([idActividadEvaluativa, idEstudiante])
+  @@index([idEstudiante])
   @@map("calificaciones")
 }
 
@@ -428,6 +437,7 @@ model HistorialCalificacion {
   calificacion   Calificacion @relation(fields: [idCalificacion], references: [id], onDelete: Restrict)
   usuario        Usuario      @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
 
+  @@index([idCalificacion])
   @@map("historial_calificaciones")
 }
 
@@ -445,5 +455,6 @@ model RegistroAuditoria {
   usuario         Usuario? @relation(fields: [idUsuario], references: [id], onDelete: SetNull)
 
   @@index([tablaAfectada, idRegistro])
+  @@index([idUsuario])
   @@map("registros_auditoria")
 }
