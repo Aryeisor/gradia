@@ -67,7 +67,7 @@ describe('validaciones de coherencia academica con mocks (sin modificar PostgreS
   });
 
   it('rechaza rol y perfil incompatibles', async () => {
-    const db = cliente({ usuario: { findUnique: vi.fn().mockResolvedValue({ rol: { nombre: 'Estudiante' }, estudiante: null, docente: { id: 2n } }) } });
+    const db = cliente({ usuario: { findUnique: vi.fn().mockResolvedValue({ rol: { codigo: 'ESTUDIANTE', nombre: 'Estudiante' }, estudiante: null, docente: { id: 2n } }) } });
     await expect(validarCoherenciaUsuarioPerfil(db, 1n)).rejects.toBeInstanceOf(ErrorConflicto);
   });
 });
