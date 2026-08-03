@@ -112,6 +112,15 @@ Los roles usan codigos estables (`ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`). Los 
 
 Las rutas protegidas reciben `Authorization: Bearer <access-token>`. El backend valida firma, usuario y sesion, y autoriza con el rol vigente en PostgreSQL. Las rutas generales deben ordenar `autenticar`, `exigirContrasenaActualizada`, `autorizarRoles(...)` y controlador. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. Los contratos completos se encuentran en `docs/AUTENTICACION.md`, `docs/CONTROL_ACCESO.md` y Swagger bajo `/api/docs`.
 
+El frontend restaura la sesion mediante la cookie refresh HttpOnly, mantiene el access token solo en memoria y configura Axios con `withCredentials`. Las solicitudes protegidas agregan Bearer automaticamente; los 401 elegibles comparten una sola renovacion y se reintentan una vez. El token no se almacena en `localStorage`, `sessionStorage` ni cookies JavaScript.
+
+Rutas de autenticacion frontend:
+
+- `/iniciar-sesion`: formulario institucional sin registro publico.
+- `/cambiar-contrasena`: cambio normal u obligatorio y nuevo inicio de sesion.
+- `/sin-autorizacion`: acceso con rol incompatible.
+- `/administrador`, `/docente` y `/estudiante`: paneles protegidos por sesion y rol.
+
 ## Comprobacion
 
 ```bash
@@ -124,7 +133,7 @@ npm run test
 npm run build
 ```
 
-La arquitectura contiene autenticacion, middlewares reutilizables de sesion, roles y cambio obligatorio, y validaciones de coherencia academica. Todavia no implementa gestion administrativa de usuarios ni CRUD academicos.
+La arquitectura contiene autenticacion completa en backend y frontend, middlewares de sesion y roles, cambio obligatorio, gestion administrativa de usuarios en la API y validaciones de coherencia academica. Todavia no incluye gestion visual de usuarios, recuperacion, registro publico ni CRUD academicos.
 
 ## Estructura
 

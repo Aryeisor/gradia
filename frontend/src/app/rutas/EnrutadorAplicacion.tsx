@@ -8,8 +8,13 @@ import { PanelDocente } from '../../paginas/docente/PanelDocente';
 import { PanelEstudiante } from '../../paginas/estudiante/PanelEstudiante';
 import { AccesoNoAutorizado } from '../../paginas/publicas/AccesoNoAutorizado';
 import { Inicio } from '../../paginas/publicas/Inicio';
-import { IniciarSesion } from '../../paginas/publicas/IniciarSesion';
 import { PaginaNoEncontrada } from '../../paginas/publicas/PaginaNoEncontrada';
+import { RutaCambioContrasena } from '../../modulos/autenticacion/componentes/RutaCambioContrasena';
+import { RutaPorRol } from '../../modulos/autenticacion/componentes/RutaPorRol';
+import { RutaProtegida } from '../../modulos/autenticacion/componentes/RutaProtegida';
+import { RutaPublica } from '../../modulos/autenticacion/componentes/RutaPublica';
+import { PaginaCambiarContrasena } from '../../modulos/autenticacion/paginas/PaginaCambiarContrasena';
+import { PaginaIniciarSesion } from '../../modulos/autenticacion/paginas/PaginaIniciarSesion';
 
 export function EnrutadorAplicacion() {
   return (
@@ -17,17 +22,30 @@ export function EnrutadorAplicacion() {
       <Routes>
         <Route element={<DisenioPublico />}>
           <Route path="/" element={<Inicio />} />
-          <Route path="/iniciar-sesion" element={<IniciarSesion />} />
           <Route path="/sin-autorizacion" element={<AccesoNoAutorizado />} />
         </Route>
-        <Route path="/administrador" element={<DisenioAdministrador />}>
-          <Route index element={<PanelAdministrador />} />
+        <Route element={<RutaPublica />}>
+          <Route path="/iniciar-sesion" element={<PaginaIniciarSesion />} />
         </Route>
-        <Route path="/docente" element={<DisenioDocente />}>
-          <Route index element={<PanelDocente />} />
+        <Route element={<RutaCambioContrasena />}>
+          <Route path="/cambiar-contrasena" element={<PaginaCambiarContrasena />} />
         </Route>
-        <Route path="/estudiante" element={<DisenioEstudiante />}>
-          <Route index element={<PanelEstudiante />} />
+        <Route element={<RutaProtegida />}>
+          <Route element={<RutaPorRol roles={['ADMINISTRADOR']} />}>
+            <Route path="/administrador" element={<DisenioAdministrador />}>
+              <Route index element={<PanelAdministrador />} />
+            </Route>
+          </Route>
+          <Route element={<RutaPorRol roles={['DOCENTE']} />}>
+            <Route path="/docente" element={<DisenioDocente />}>
+              <Route index element={<PanelDocente />} />
+            </Route>
+          </Route>
+          <Route element={<RutaPorRol roles={['ESTUDIANTE']} />}>
+            <Route path="/estudiante" element={<DisenioEstudiante />}>
+              <Route index element={<PanelEstudiante />} />
+            </Route>
+          </Route>
         </Route>
         <Route path="/inicio" element={<Navigate to="/" replace />} />
         <Route path="*" element={<PaginaNoEncontrada />} />

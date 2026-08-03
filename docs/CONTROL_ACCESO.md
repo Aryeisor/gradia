@@ -1,8 +1,8 @@
-# Control de acceso - fase 4
+# Control de acceso
 
 ## Objetivo
 
-La fase 4 centraliza autenticacion, vigencia de sesion, rol actual y cambio obligatorio de contrasena en middlewares reutilizables de Express. No incorpora gestion de usuarios ni rutas academicas.
+El backend centraliza autenticacion, vigencia de sesion, rol actual y cambio obligatorio de contrasena en middlewares reutilizables de Express. El frontend refleja esas decisiones mediante guardas React, pero nunca sustituye la autorizacion del servidor.
 
 ## Middleware `autenticar`
 
@@ -76,6 +76,15 @@ Las pruebas unitarias cubren formato Bearer, errores JWT, identificadores, usuar
 
 La integracion usa exclusivamente `DATABASE_URL_TEST`, exige el nombre `gradia_test`, crea usuarios ficticios de los tres roles y limpia usuarios, sesiones y auditorias por prefijo tecnico. Tambien comprueba cambios de rol en PostgreSQL, aislamiento entre cuentas y los cuatro endpoints permitidos.
 
-## Limitaciones y siguiente fase
+## Guardas del frontend
 
-La aplicacion todavia no expone CRUD de usuarios ni rutas academicas protegidas por rol. La proxima fase es la gestion administrativa de usuarios, reutilizando estos middlewares sin cambiar sus contratos de seguridad.
+- `RutaPublica` evita mostrar login a una sesion ya autenticada y redirige al panel del rol.
+- `RutaProtegida` exige sesion restaurada y envia cuentas temporales al cambio de contrasena.
+- `RutaPorRol` dirige accesos incompatibles a `/sin-autorizacion`.
+- `RutaCambioContrasena` exige una identidad valida, pero permanece disponible cuando el cambio es obligatorio.
+
+El estado `inicializando` bloquea decisiones de navegacion hasta finalizar la restauracion. Estas guardas mejoran la experiencia y ocultan opciones no aplicables, pero todos los permisos continúan verificandose en Express con el rol actual de PostgreSQL.
+
+## Limitaciones
+
+El backend ya expone gestion administrativa de usuarios. El frontend de esta fase no incluye esa interfaz visual, recuperacion de contrasena, registro publico ni modulos academicos nuevos.
