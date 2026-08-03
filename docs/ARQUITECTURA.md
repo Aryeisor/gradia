@@ -44,6 +44,8 @@ Los controladores no consultan Prisma directamente. La verificacion de base de d
 
 Los controladores asincronos se envuelven con `manejadorAsincrono`, que propaga rechazos al middleware central. Los servicios y validaciones de dominio lanzan errores tipados y no dependen de Express.
 
+Las rutas protegidas usan `autenticar`, `exigirContrasenaActualizada` y `autorizarRoles` antes del controlador. `autenticar` valida JWT, usuario y sesion, y construye una identidad minima tipada en `req.usuarioAutenticado`. PostgreSQL es la fuente de verdad para estado, sesion y rol; los controladores no reinterpretan el access token.
+
 ## Respuestas y errores
 
 Las respuestas exitosas usan una utilidad central. Antes de enviarlas, los datos se transforman recursivamente: `BigInt` y `Prisma.Decimal` son strings, `Date` usa ISO 8601 y los arreglos y objetos anidados mantienen la misma estructura. Esto evita perdida de precision y no modifica globalmente `BigInt.prototype`.
@@ -64,6 +66,8 @@ El proceso maneja SIGINT, SIGTERM, errores HTTP, rechazos no controlados y excep
 
 - `GET /api/salud`: devuelve 200 cuando API y PostgreSQL funcionan, o 503 cuando Express funciona pero PostgreSQL no. La ausencia de respuesta HTTP representa una API inaccesible.
 - `GET /api/docs`: documentacion OpenAPI inicial.
+
+Los endpoints actuales de consulta y cierre de autenticacion usan el middleware definitivo. Login y renovacion permanecen publicos respecto del access token. Los routers usados para probar roles se construyen solo dentro de las pruebas y no forman parte de la API normal.
 
 ## Variables de entorno
 

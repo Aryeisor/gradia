@@ -32,14 +32,14 @@ export class ErrorValidacion extends ErrorAplicacion {
 }
 
 export class ErrorNoAutenticado extends ErrorAplicacion {
-  constructor(mensaje = 'Autenticacion requerida') {
-    super(mensaje, 401, { codigoInterno: 'NO_AUTENTICADO' });
+  constructor(mensaje = 'Autenticacion requerida', codigoInterno = 'AUTENTICACION_REQUERIDA') {
+    super(mensaje, 401, { codigoInterno });
   }
 }
 
 export class ErrorSinPermisos extends ErrorAplicacion {
-  constructor(mensaje = 'No tiene permisos para realizar esta accion') {
-    super(mensaje, 403, { codigoInterno: 'SIN_PERMISOS' });
+  constructor(mensaje = 'No tiene permisos para realizar esta accion', codigoInterno = 'ROL_NO_AUTORIZADO') {
+    super(mensaje, 403, { codigoInterno });
   }
 }
 

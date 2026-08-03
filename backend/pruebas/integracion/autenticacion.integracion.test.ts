@@ -250,7 +250,7 @@ describe.sequential('autenticacion con PostgreSQL real', () => {
     })).resolves.toBe(2);
   });
 
-  it('cierra la sesion actual de forma idempotente sin afectar otra sesion', async () => {
+  it('cierra la sesion actual e invalida su autenticacion sin afectar otra sesion', async () => {
     const aplicacion = crearAplicacion();
     const primero = await iniciarSesion({ correo: datos.principal.correo, contrasena: datos.contrasenaActual }, aplicacion);
     const segundo = await iniciarSesion({ correo: datos.principal.correo, contrasena: datos.contrasenaActual }, aplicacion);
@@ -262,7 +262,7 @@ describe.sequential('autenticacion con PostgreSQL real', () => {
     const cerrar = () => request(aplicacion).post('/api/autenticacion/cerrar-sesion')
       .set('Authorization', `Bearer ${accessPrimero}`).set('Cookie', cookiePrimero);
     expect((await cerrar()).status).toBe(200);
-    expect((await cerrar()).status).toBe(200);
+    expect((await cerrar()).status).toBe(401);
     expect((await request(aplicacion).get('/api/autenticacion/yo')
       .set('Authorization', `Bearer ${accessPrimero}`)).status).toBe(401);
     expect((await request(aplicacion).get('/api/autenticacion/yo')

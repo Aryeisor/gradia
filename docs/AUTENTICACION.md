@@ -1,6 +1,6 @@
 # Autenticacion y seguridad
 
-Este documento describe la API backend de autenticacion. No incluye middleware global por roles, administracion de usuarios, recuperacion por correo ni pantallas frontend.
+Este documento describe la API backend de autenticacion y sus middlewares de control de acceso. No incluye administracion de usuarios, recuperacion por correo ni pantallas frontend.
 
 ## Endpoints
 
@@ -13,7 +13,7 @@ Este documento describe la API backend de autenticacion. No incluye middleware g
 | POST | `/api/autenticacion/cerrar-todas` | Bearer access token | Revoca todas las sesiones |
 | PATCH | `/api/autenticacion/cambiar-contrasena` | Bearer access token | Cambia la clave y exige nuevo login |
 
-Las respuestas exitosas usan `{ exito, mensaje, datos? }`. Los errores usan `{ exito: false, mensaje, errores, codigo? }` con 400, 401, 409, 429, 500 o 503 segun corresponda. El login usa mensajes genericos para no revelar si un correo existe.
+Las respuestas exitosas usan `{ exito, mensaje, datos? }`. Los errores usan `{ exito: false, mensaje, errores, codigo? }` con 400, 401, 403, 409, 429, 500 o 503 segun corresponda. El login usa mensajes genericos para no revelar si un correo existe.
 
 ## Contrasenas
 
@@ -22,6 +22,8 @@ La entrada se valida sin recortarla ni modificarla: exige entre 12 caracteres y 
 ## Access token
 
 El access token es JWT firmado con HS256 y `JWT_SECRET`. Su duracion proviene de `JWT_ACCESS_EXPIRACION`. El payload se valida de forma estricta y solo contiene `sub` (usuario), `rol` (`ADMINISTRADOR`, `DOCENTE` o `ESTUDIANTE`), `sid` (sesion), `tipo: access`, `iat` y `exp`. No incorpora correo, datos personales ni secretos.
+
+En cada ruta protegida, `autenticar` verifica nuevamente usuario y sesion en PostgreSQL. El rol que autoriza es el valor vigente de `roles.codigo`, no el claim historico del JWT. Una sesion revocada o vencida, un usuario inactivo o una contrasena modificada en un segundo posterior a `iat` invalidan el acceso con HTTP 401.
 
 ## Refresh token y sesiones
 
@@ -46,6 +48,8 @@ Requiere un access token y la clave actual. La confirmacion debe coincidir, la n
 Las pruebas HTTP ordinarias simulan los servicios y no modifican PostgreSQL. Las pruebas de ciclo completo usan exclusivamente `DATABASE_URL_TEST`, validan que la base sea exactamente `gradia_test` y fallan si la variable falta o apunta a otro nombre. No existe respaldo silencioso hacia `DATABASE_URL`.
 
 `npm run test:unit` ejecuta pruebas aisladas. `npm run test:integration` carga `backend/.env.test`, prepara cuentas ficticias, ejecuta los seis endpoints con PostgreSQL real y limpia solo esos datos. `npm run test` ejecuta ambos grupos. El detalle y la auditoria de la fase estan en `docs/ESTABILIZACION_AUTENTICACION.md`.
+
+La estrategia de roles, cambio obligatorio, codigos 401/403 y orden de middlewares se documenta en `docs/CONTROL_ACCESO.md`.
 
 ## Auditoria
 

@@ -110,7 +110,7 @@ Los roles usan codigos estables (`ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`). Los 
 - `POST /api/autenticacion/cerrar-todas`: revoca todas las sesiones del usuario.
 - `PATCH /api/autenticacion/cambiar-contrasena`: actualiza la clave, revoca sesiones y exige un nuevo login.
 
-Las rutas protegidas reciben `Authorization: Bearer <access-token>`. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. El contrato completo se encuentra en `docs/AUTENTICACION.md` y en Swagger bajo `/api/docs`.
+Las rutas protegidas reciben `Authorization: Bearer <access-token>`. El backend valida firma, usuario y sesion, y autoriza con el rol vigente en PostgreSQL. Las rutas generales deben ordenar `autenticar`, `exigirContrasenaActualizada`, `autorizarRoles(...)` y controlador. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. Los contratos completos se encuentran en `docs/AUTENTICACION.md`, `docs/CONTROL_ACCESO.md` y Swagger bajo `/api/docs`.
 
 ## Comprobacion
 
@@ -124,7 +124,7 @@ npm run test
 npm run build
 ```
 
-La arquitectura contiene autenticacion y validaciones reutilizables de coherencia academica. Todavia no implementa autorización global por roles, gestion administrativa de usuarios ni CRUD academicos.
+La arquitectura contiene autenticacion, middlewares reutilizables de sesion, roles y cambio obligatorio, y validaciones de coherencia academica. Todavia no implementa gestion administrativa de usuarios ni CRUD academicos.
 
 ## Estructura
 

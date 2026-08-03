@@ -2,11 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 import { exigirUrlBasePruebas } from '../../../src/configuracion/base-datos-pruebas.js';
 import { generarHashContrasena } from '../../../src/modulos/autenticacion/servicios/contrasenas.servicio.js';
+import { CodigoRol } from '../../../src/modulos/autenticacion/tipos/autenticacion.tipos.js';
 
 const PREFIJO_DOCUMENTO = 'IT-AUTH-';
 const DOMINIO_PRUEBAS = 'integration.example.test';
 
-type UsuarioPrueba = {
+export type UsuarioPrueba = {
   id: bigint;
   correo: string;
 };
@@ -19,6 +20,8 @@ export type DatosAutenticacionPrueba = {
   inactivo: UsuarioPrueba;
   bloqueo: UsuarioPrueba;
   secundario: UsuarioPrueba;
+  docente: UsuarioPrueba;
+  estudiante: UsuarioPrueba;
 };
 
 function crearContrasenaFicticia(): string {
@@ -55,24 +58,34 @@ export async function prepararDatosAutenticacionPrueba(
   prisma: PrismaClient
 ): Promise<DatosAutenticacionPrueba> {
   await limpiarDatosAutenticacionPrueba(prisma);
-  const rol = await prisma.rol.findUniqueOrThrow({ where: { codigo: 'ADMINISTRADOR' } });
+  const roles = await prisma.rol.findMany({
+    where: { codigo: { in: ['ADMINISTRADOR', 'DOCENTE', 'ESTUDIANTE'] } },
+    select: { id: true, codigo: true }
+  });
+  const idRol = (codigo: CodigoRol) => {
+    const rol = roles.find((actual) => actual.codigo === codigo);
+    if (!rol) throw new Error(`Falta el rol tecnico ${codigo} en gradia_test`);
+    return rol.id;
+  };
   const contrasenaActual = crearContrasenaFicticia();
   const contrasenaNueva = crearContrasenaFicticia();
   const contrasenaHash = await generarHashContrasena(contrasenaActual);
 
   const definiciones = [
-    ['principal', 'PRINCIPAL', true, false],
-    ['cambioObligatorio', 'CAMBIO', true, true],
-    ['inactivo', 'INACTIVO', false, false],
-    ['bloqueo', 'BLOQUEO', true, false],
-    ['secundario', 'SECUNDARIO', true, false]
+    ['principal', 'PRINCIPAL', true, false, 'ADMINISTRADOR'],
+    ['cambioObligatorio', 'CAMBIO', true, true, 'ADMINISTRADOR'],
+    ['inactivo', 'INACTIVO', false, false, 'ADMINISTRADOR'],
+    ['bloqueo', 'BLOQUEO', true, false, 'ADMINISTRADOR'],
+    ['secundario', 'SECUNDARIO', true, false, 'ADMINISTRADOR'],
+    ['docente', 'DOCENTE', true, false, 'DOCENTE'],
+    ['estudiante', 'ESTUDIANTE', true, false, 'ESTUDIANTE']
   ] as const;
 
   const creados: Partial<Record<(typeof definiciones)[number][0], UsuarioPrueba>> = {};
-  for (const [clave, sufijo, estado, debeCambiarContrasena] of definiciones) {
+  for (const [clave, sufijo, estado, debeCambiarContrasena, codigoRol] of definiciones) {
     const usuario = await prisma.usuario.create({
       data: {
-        idRol: rol.id,
+        idRol: idRol(codigoRol),
         nombres: 'Usuario',
         apellidos: `Prueba ${sufijo}`,
         tipoDocumento: 'CC',
@@ -97,6 +110,8 @@ export async function prepararDatosAutenticacionPrueba(
     cambioObligatorio: creados.cambioObligatorio!,
     inactivo: creados.inactivo!,
     bloqueo: creados.bloqueo!,
-    secundario: creados.secundario!
+    secundario: creados.secundario!,
+    docente: creados.docente!,
+    estudiante: creados.estudiante!
   };
 }

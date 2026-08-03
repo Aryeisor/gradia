@@ -44,11 +44,15 @@ La configuracion de produccion usa `tsconfig.build.json`; el build elimina artef
 
 ## Fase funcional
 
-La arquitectura previa dio paso a la autenticacion backend hasta fase 3: inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion y cambio de contrasena. La autorizacion global por roles y el CRUD administrativo de usuarios aun no estan implementados.
+La autenticacion backend incluye inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion, cambio de contrasena y middlewares definitivos de fase 4. El CRUD administrativo de usuarios y las rutas academicas protegidas aun no estan implementados.
 
 ## Identificadores de rol
 
-La autorizacion futura utilizara `roles.codigo`, no el nombre visible. Esto evita que cambios de presentacion rompan reglas de acceso.
+La autorizacion utiliza el valor vigente de `roles.codigo`, no el nombre visible ni el claim historico del JWT. Esto evita que cambios de presentacion rompan reglas y retira permisos anteriores inmediatamente cuando cambia el rol en PostgreSQL.
+
+## Identidad y precision temporal
+
+Express recibe una identidad minima tipada con usuario, sesion, rol y cambio obligatorio. El claim `iat` usa segundos, mientras PostgreSQL conserva milisegundos; por ello, una contrasena se considera posterior al token desde el inicio del segundo siguiente a `iat`. La tolerancia menor de un segundo evita falsos rechazos para tokens emitidos legitimamente dentro del mismo segundo.
 
 ## Sesiones renovables
 
