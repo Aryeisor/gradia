@@ -6,16 +6,16 @@ const prisma = new PrismaClient();
 
 async function main() {
   const roles = [
-    ['Administrador', 'Gestiona la configuracion general de Gradia'],
-    ['Docente', 'Gestiona actividades y calificaciones asignadas'],
-    ['Estudiante', 'Consulta calificaciones y boletines publicados']
+    ['ADMINISTRADOR', 'Administrador', 'Gestiona la configuracion general de Gradia'],
+    ['DOCENTE', 'Docente', 'Gestiona actividades y calificaciones asignadas'],
+    ['ESTUDIANTE', 'Estudiante', 'Consulta calificaciones y boletines publicados']
   ] as const;
 
-  for (const [nombre, descripcion] of roles) {
+  for (const [codigo, nombre, descripcion] of roles) {
     await prisma.rol.upsert({
-      where: { nombre },
-      update: { descripcion, estado: true },
-      create: { nombre, descripcion }
+      where: { codigo },
+      update: { nombre, descripcion, estado: true },
+      create: { codigo, nombre, descripcion }
     });
   }
 
@@ -130,8 +130,9 @@ async function main() {
     });
 
   if (variablesAdministrador.correo && variablesAdministrador.contrasena) {
-    const rolAdministrador = await prisma.rol.findUniqueOrThrow({ where: { nombre: 'Administrador' } });
-    const contrasenaHash = await bcrypt.hash(variablesAdministrador.contrasena, 10);
+    const rolAdministrador = await prisma.rol.findUniqueOrThrow({ where: { codigo: 'ADMINISTRADOR' } });
+    const costoBcrypt = z.coerce.number().int().min(10).max(14).default(12).parse(process.env.BCRYPT_COSTO);
+    const contrasenaHash = await bcrypt.hash(variablesAdministrador.contrasena, costoBcrypt);
 
     await prisma.usuario.upsert({
       where: { numeroDocumento: 'ADMIN-GRADIA' },
@@ -139,6 +140,10 @@ async function main() {
         idRol: rolAdministrador.id,
         correo: variablesAdministrador.correo,
         contrasenaHash,
+        debeCambiarContrasena: true,
+        contrasenaActualizadaEn: null,
+        intentosFallidos: 0,
+        bloqueadoHasta: null,
         estado: true
       },
       create: {
@@ -148,7 +153,10 @@ async function main() {
         tipoDocumento: 'NIT',
         numeroDocumento: 'ADMIN-GRADIA',
         correo: variablesAdministrador.correo,
-        contrasenaHash
+        contrasenaHash,
+        debeCambiarContrasena: true,
+        intentosFallidos: 0,
+        bloqueadoHasta: null
       }
     });
   }

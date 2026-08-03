@@ -83,6 +83,31 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 
 Las variables `ADMIN_INICIAL_CORREO` y `ADMIN_INICIAL_CONTRASENA` son opcionales como conjunto. Si se configura una, debe configurarse la otra; la contrasena debe tener al menos 12 caracteres y no usar marcadores inseguros en produccion.
 
+Variables de autenticacion:
+
+```env
+JWT_SECRET=reemplazar_por_un_secreto_seguro
+JWT_ACCESS_EXPIRACION=15m
+REFRESH_TOKEN_DIAS=7
+REFRESH_TOKEN_COOKIE=gradia_refresh_token
+MAX_INTENTOS_LOGIN=5
+MINUTOS_BLOQUEO_LOGIN=15
+BCRYPT_COSTO=12
+```
+
+Los roles usan codigos estables (`ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`). Los refresh tokens nunca se guardan en texto plano: `sesiones_autenticacion` almacena unicamente `token_hash` y metadatos de expiracion, revocacion y rotacion.
+
+## API de autenticacion
+
+- `POST /api/autenticacion/iniciar-sesion`: valida credenciales, devuelve access token y establece cookie HttpOnly.
+- `POST /api/autenticacion/renovar`: rota la cookie refresh y devuelve un access token nuevo.
+- `GET /api/autenticacion/yo`: devuelve usuario, rol y perfil asociado.
+- `POST /api/autenticacion/cerrar-sesion`: revoca la sesion actual.
+- `POST /api/autenticacion/cerrar-todas`: revoca todas las sesiones del usuario.
+- `PATCH /api/autenticacion/cambiar-contrasena`: actualiza la clave, revoca sesiones y exige un nuevo login.
+
+Las rutas protegidas reciben `Authorization: Bearer <access-token>`. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. El contrato completo se encuentra en `docs/AUTENTICACION.md` y en Swagger bajo `/api/docs`.
+
 ## Comprobacion
 
 ```bash
@@ -95,7 +120,7 @@ npm run test
 npm run build
 ```
 
-La arquitectura contiene validaciones reutilizables de coherencia academica, pero todavia no implementa autenticacion, JWT, permisos ni CRUD academicos.
+La arquitectura contiene autenticacion y validaciones reutilizables de coherencia academica. Todavia no implementa autorización global por roles, gestion administrativa de usuarios ni CRUD academicos.
 
 ## Estructura
 

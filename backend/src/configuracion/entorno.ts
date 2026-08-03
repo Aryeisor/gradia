@@ -8,12 +8,17 @@ const opcionalVacio = <T extends z.ZodTypeAny>(esquema: T) =>
 
 export const esquemaEntorno = z
   .object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PUERTO: z.coerce.number().int().positive().default(3000),
-  DATABASE_URL: z.string().url(),
-  ORIGEN_FRONTEND: z.string().url().default('http://localhost:5173'),
-  JWT_SECRET: z.string().min(16),
-  JWT_EXPIRACION: z.string().default('8h'),
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PUERTO: z.coerce.number().int().positive().default(3000),
+    DATABASE_URL: z.string().url(),
+    ORIGEN_FRONTEND: z.string().url().default('http://localhost:5173'),
+    JWT_SECRET: z.string().min(32),
+    JWT_ACCESS_EXPIRACION: z.string().regex(/^[1-9]\d*[smhd]$/).default('15m'),
+    REFRESH_TOKEN_DIAS: z.coerce.number().int().positive().default(7),
+    REFRESH_TOKEN_COOKIE: z.string().min(1).default('gradia_refresh_token'),
+    MAX_INTENTOS_LOGIN: z.coerce.number().int().positive().default(5),
+    MINUTOS_BLOQUEO_LOGIN: z.coerce.number().int().positive().default(15),
+    BCRYPT_COSTO: z.coerce.number().int().min(10).max(14).default(12),
     ADMIN_INICIAL_CORREO: opcionalVacio(z.string().email()),
     ADMIN_INICIAL_CONTRASENA: opcionalVacio(z.string().min(12))
   })

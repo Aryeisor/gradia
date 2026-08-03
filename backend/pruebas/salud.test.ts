@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 process.env.PUERTO = '3000';
 process.env.DATABASE_URL = 'postgresql://usuario:contrasena@localhost:5432/gradia_test';
 process.env.ORIGEN_FRONTEND = 'http://localhost:5173';
-process.env.JWT_SECRET = 'secreto_seguro_para_pruebas';
+process.env.JWT_SECRET = 'secreto_seguro_para_pruebas_de_gradia';
 
 vi.mock('../src/infraestructura/prisma/cliente-prisma.js', () => ({
   prisma: {

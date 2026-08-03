@@ -25,6 +25,7 @@ La base de datos se llama `gradia` y usa PostgreSQL. Las tablas y columnas fisic
 19. `configuraciones_academicas`: escala de notas por ano.
 20. `historial_calificaciones`: cambios de notas.
 21. `registros_auditoria`: bitacora de operaciones sensibles.
+22. `sesiones_autenticacion`: sesiones renovables; conserva hash, expiracion, revocacion y rotacion.
 
 ## Relaciones principales
 
@@ -45,7 +46,20 @@ detalle_plan_estudio 1 -> N asignaciones_academicas
 asignaciones_academicas 1 -> N actividades_evaluativas
 actividades_evaluativas 1 -> N calificaciones
 calificaciones 1 -> N historial_calificaciones
+usuarios 1 -> N sesiones_autenticacion
+sesiones_autenticacion 1 -> N sesiones_autenticacion reemplazadas
 ```
+
+## Identidad y seguridad
+
+- `roles.codigo` es el identificador estable de autorizacion: `ADMINISTRADOR`, `DOCENTE` o `ESTUDIANTE`. `nombre` se conserva para presentacion.
+- `usuarios.debe_cambiar_contrasena` indica si debe renovarse la credencial antes del uso normal.
+- `usuarios.contrasena_actualizada_en` registra el ultimo cambio de credencial.
+- `usuarios.intentos_fallidos` nunca puede ser negativo.
+- `usuarios.bloqueado_hasta` permite bloqueos temporales.
+- `sesiones_autenticacion.token_hash` es unico. Nunca se almacena el refresh token en texto plano.
+- Una sesion activa no tiene fecha de revocacion, no ha expirado y pertenece a un usuario activo.
+- La relacion de reemplazo permite auditar la rotacion; las relaciones usan `Restrict` o `SetNull`, no borrado en cascada.
 
 ## Restricciones en PostgreSQL
 
@@ -82,6 +96,8 @@ calificaciones 1 -> N historial_calificaciones
 ## Indices de consulta
 
 La migracion `ajustes_arquitectura_pre_autenticacion` agrega indices no destructivos para las relaciones de usuarios, grados, asignaturas, areas y detalles del plan, grupos, calificaciones, historial y auditoria. No se duplicaron los indices existentes de matriculas ni los indices compuestos cuyo primer campo ya cubre periodos, planes, detalles o grados.
+
+La migracion `autenticacion_estructura_sesiones` agrega unicidad para `roles.codigo` y `sesiones_autenticacion.token_hash`, ademas de indices por usuario, expiracion y sesiones activas por usuario.
 
 ## Politica de eliminacion
 
