@@ -1,10 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
-const ejecutar = process.env.EJECUTAR_PRUEBAS_DB === 'true';
 const prisma = new PrismaClient();
 
-describe.skipIf(!ejecutar)('verificaciones de base de datos', () => {
+afterAll(async () => prisma.$disconnect());
+
+describe('verificaciones de base de datos', () => {
   it('confirma conexion con PostgreSQL y tablas principales', async () => {
     const tablas = await prisma.$queryRaw<Array<{ table_name: string }>>`
       SELECT table_name

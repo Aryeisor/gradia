@@ -30,7 +30,11 @@ function codigoRolSeguro(codigo: string): CodigoRol {
 
 function transformarUsuarioSeguro(usuario: Prisma.UsuarioGetPayload<{ select: typeof seleccionUsuarioSeguro }>): UsuarioAutenticadoSeguro {
   return {
-    ...usuario,
+    id: usuario.id,
+    nombres: usuario.nombres,
+    apellidos: usuario.apellidos,
+    correo: usuario.correo,
+    debeCambiarContrasena: usuario.debeCambiarContrasena,
     rol: { codigo: codigoRolSeguro(usuario.rol.codigo), nombre: usuario.rol.nombre }
   };
 }
@@ -76,7 +80,25 @@ export async function iniciarSesion(
 
   const contrasenaCorrecta = await compararContrasena(entrada.contrasena, usuario.contrasenaHash);
   if (!contrasenaCorrecta) {
-    await registrarIntentoFallido(prisma, usuario.id);
+    await prisma.$transaction(async (tx) => {
+      const proteccion = await registrarIntentoFallido(tx, usuario.id);
+      const bloqueada = proteccion.bloqueadoHasta !== null;
+      await registrarAuditoriaSeguridad(tx, {
+        accion: bloqueada ? 'BLOQUEO_CUENTA' : 'INICIO_SESION_FALLIDO',
+        modulo: 'AUTENTICACION',
+        idUsuario: usuario.id,
+        direccionIp: contexto.direccionIp,
+        agenteUsuario: contexto.agenteUsuario,
+        tablaAfectada: 'usuarios',
+        idRegistro: usuario.id,
+        datosNuevos: {
+          resultado: 'fallido',
+          motivo: 'credenciales_invalidas',
+          intentosFallidos: proteccion.intentosFallidos,
+          bloqueada
+        }
+      });
+    });
     throw new ErrorNoAutenticado(MENSAJE_CREDENCIALES);
   }
 

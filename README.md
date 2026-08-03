@@ -65,7 +65,9 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 - `npm run dev:frontend`: inicia Vite.
 - `npm run dev:backend`: inicia Express con `tsx`.
 - `npm run lint`: valida estilo de codigo.
-- `npm run test`: ejecuta pruebas minimas.
+- `npm run test`: ejecuta pruebas unitarias, frontend e integracion PostgreSQL.
+- `npm run test:unit`: ejecuta backend aislado y pruebas frontend sin PostgreSQL real.
+- `npm run test:integration`: ejecuta integracion backend exclusivamente sobre `gradia_test`.
 - `npm run build`: compila backend y frontend.
 - `npm run start --workspace=backend`: inicia el backend compilado.
 - `npm run db:generate`: genera Prisma Client.
@@ -82,6 +84,8 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 - El frontend reserva “API no disponible” para errores de red, timeout o ausencia de respuesta.
 
 Las variables `ADMIN_INICIAL_CORREO` y `ADMIN_INICIAL_CONTRASENA` son opcionales como conjunto. Si se configura una, debe configurarse la otra; la contrasena debe tener al menos 12 caracteres y no usar marcadores inseguros en produccion.
+
+Las pruebas de integracion requieren un archivo local `backend/.env.test` con `NODE_ENV=test` y `DATABASE_URL_TEST` apuntando exactamente a `gradia_test`. El archivo esta ignorado por Git. La suite falla antes de modificar datos si falta la variable o el nombre no coincide; nunca reutiliza silenciosamente la base `gradia`.
 
 Variables de autenticacion:
 

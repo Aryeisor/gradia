@@ -56,6 +56,18 @@ La autorizacion futura utilizara `roles.codigo`, no el nombre visible. Esto evit
 
 La sesion se considera activa cuando no esta revocada, no ha expirado y el usuario permanece activo. Los servicios de autenticacion aplican esta regla al renovar tokens y validar operaciones protegidas de la fase 3.
 
+## Aislamiento de pruebas de integracion
+
+Las pruebas unitarias no requieren PostgreSQL. Las pruebas de integracion cargan `backend/.env.test`, exigen `DATABASE_URL_TEST` y rechazan cualquier base distinta de `gradia_test` antes de preparar o limpiar datos. La comprobacion se repite contra `current_database()` antes de cada operacion destructiva. No se usa `DATABASE_URL` como respaldo.
+
+Cada instancia de Express crea sus propios routers y su propio almacen del rate limiter. Esto conserva el aislamiento entre instancias de prueba y evita compartir contadores en memoria accidentalmente.
+
+## Deuda tecnica de dependencias
+
+Las alertas npm pendientes requieren cambios mayores de Vite/Vitest, React Router o bcrypt y no tienen una correccion compatible dentro de esta fase. Sus mitigaciones y alcance estan registrados en `docs/ESTABILIZACION_AUTENTICACION.md`.
+
+Prisma `6.19.3` aun admite `package.json#prisma`, pero advierte que Prisma 7 exigira trasladar el seeder a `prisma.config.ts`. La migracion se aplaza hasta una actualizacion mayor controlada.
+
 ## Politica de credenciales
 
 El entorno define expiracion del access token, dias del refresh token, nombre de cookie, limite y duracion de bloqueo, y costo bcrypt. Los servicios generan JWT, cookies HttpOnly y hashes bcrypt o SHA-256 según el tipo de credencial, sin persistir tokens refresh en texto plano.

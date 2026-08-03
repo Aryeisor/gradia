@@ -2,7 +2,22 @@ import { Prisma } from '@prisma/client';
 import { ClientePrismaTransaccional } from '../../../compartido/validaciones/validaciones-coherencia-academica.js';
 
 const CAMPOS_SENSIBLES = new Set([
-  'contrasena', 'contrasenahash', 'token', 'tokenacceso', 'tokenrefresh', 'tokenhash', 'cookies', 'jwtsecret'
+  'authorization',
+  'confirmacioncontrasena',
+  'contrasena',
+  'contrasenaactual',
+  'contrasenahash',
+  'contrasenanueva',
+  'cookie',
+  'cookies',
+  'databaseurl',
+  'databaseurltest',
+  'jwtsecret',
+  'refreshtoken',
+  'token',
+  'tokenacceso',
+  'tokenhash',
+  'tokenrefresh'
 ]);
 
 function normalizarClave(clave: string): string {

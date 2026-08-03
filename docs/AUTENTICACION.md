@@ -43,11 +43,13 @@ Requiere un access token y la clave actual. La confirmacion debe coincidir, la n
 
 ## Pruebas de integracion
 
-Las pruebas HTTP ordinarias simulan los servicios y no modifican PostgreSQL. Cualquier prueba destructiva o de ciclo completo debe usar exclusivamente `DATABASE_URL_TEST`; si no existe, se omite en lugar de conectarse a la base `gradia` de desarrollo.
+Las pruebas HTTP ordinarias simulan los servicios y no modifican PostgreSQL. Las pruebas de ciclo completo usan exclusivamente `DATABASE_URL_TEST`, validan que la base sea exactamente `gradia_test` y fallan si la variable falta o apunta a otro nombre. No existe respaldo silencioso hacia `DATABASE_URL`.
+
+`npm run test:unit` ejecuta pruebas aisladas. `npm run test:integration` carga `backend/.env.test`, prepara cuentas ficticias, ejecuta los seis endpoints con PostgreSQL real y limpia solo esos datos. `npm run test` ejecuta ambos grupos. El detalle y la auditoria de la fase estan en `docs/ESTABILIZACION_AUTENTICACION.md`.
 
 ## Auditoria
 
-El servicio registra accion, modulo, usuario, IP, agente de usuario, tabla/registro y cambios anterior/nuevo en `registros_auditoria`. Antes de persistir elimina recursivamente contrasenas, hashes de contrasena, tokens, hashes de token, cookies y secretos JWT. Los valores `BigInt`, `Decimal` y `Date` se convierten a representaciones JSON seguras.
+El servicio registra accion, modulo, usuario, IP, agente de usuario, tabla/registro y cambios anterior/nuevo en `registros_auditoria`. Antes de persistir elimina recursivamente contrasenas, hashes de contrasena, tokens, hashes de token, cookies, cabeceras de autorizacion, secretos JWT y URL de bases. Los valores `BigInt`, `Decimal` y `Date` se convierten a representaciones JSON seguras.
 
 ## Variables requeridas
 
