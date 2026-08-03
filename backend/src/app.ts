@@ -1,4 +1,5 @@
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
@@ -14,8 +15,9 @@ export function crearAplicacion() {
   const app = express();
 
   app.use(helmet());
-  app.use(cors({ origin: entorno.ORIGEN_FRONTEND }));
+  app.use(cors({ origin: entorno.ORIGEN_FRONTEND, credentials: true }));
   app.use(express.json());
+  app.use(cookieParser());
   app.use(pinoHttp({ logger }));
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(especificacionSwagger));

@@ -60,3 +60,9 @@ export class ErrorServicioNoDisponible extends ErrorAplicacion {
     super(mensaje, 503, { codigoInterno: 'SERVICIO_NO_DISPONIBLE' });
   }
 }
+
+export class ErrorLimiteSolicitudes extends ErrorAplicacion {
+  constructor(mensaje = 'Demasiadas solicitudes. Intente nuevamente mas tarde') {
+    super(mensaje, 429, { codigoInterno: 'LIMITE_SOLICITUDES' });
+  }
+}

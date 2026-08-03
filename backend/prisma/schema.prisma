@@ -78,6 +78,7 @@ enum EstadoCalificacion {
 
 model Rol {
   id            BigInt    @id @default(autoincrement())
+  codigo        String    @unique @db.VarChar(30)
   nombre        String    @unique @db.VarChar(50)
   descripcion   String?
   estado        Boolean   @default(true)
@@ -97,6 +98,10 @@ model Usuario {
   numeroDocumento           String                  @unique @map("numero_documento") @db.VarChar(30)
   correo                    String                  @unique @db.VarChar(150)
   contrasenaHash            String                  @map("contrasena_hash") @db.VarChar(255)
+  debeCambiarContrasena     Boolean                 @default(true) @map("debe_cambiar_contrasena")
+  contrasenaActualizadaEn   DateTime?               @map("contrasena_actualizada_en")
+  intentosFallidos          Int                     @default(0) @map("intentos_fallidos")
+  bloqueadoHasta            DateTime?               @map("bloqueado_hasta")
   estado                    Boolean                 @default(true)
   ultimoAcceso              DateTime?               @map("ultimo_acceso")
   creadoEn                  DateTime                @default(now()) @map("creado_en")
@@ -109,9 +114,33 @@ model Usuario {
   calificacionesModificadas Calificacion[]          @relation("calificaciones_modificadas")
   historialCalificaciones   HistorialCalificacion[]
   registrosAuditoria        RegistroAuditoria[]
+  sesionesAutenticacion     SesionAutenticacion[]
 
   @@index([idRol])
   @@map("usuarios")
+}
+
+model SesionAutenticacion {
+  id                   BigInt                @id @default(autoincrement())
+  idUsuario            BigInt                @map("id_usuario")
+  tokenHash            String                @unique @map("token_hash") @db.VarChar(255)
+  fechaExpiracion      DateTime              @map("fecha_expiracion")
+  fechaRevocacion      DateTime?             @map("fecha_revocacion")
+  motivoRevocacion     String?               @map("motivo_revocacion")
+  idSesionReemplazo    BigInt?               @map("id_sesion_reemplazo")
+  direccionIp          String?               @map("direccion_ip") @db.VarChar(50)
+  agenteUsuario        String?               @map("agente_usuario")
+  ultimoUsoEn          DateTime?             @map("ultimo_uso_en")
+  creadoEn             DateTime              @default(now()) @map("creado_en")
+  actualizadoEn        DateTime              @updatedAt @map("actualizado_en")
+  usuario              Usuario               @relation(fields: [idUsuario], references: [id], onDelete: Restrict)
+  sesionReemplazo      SesionAutenticacion?  @relation("rotacion_sesiones", fields: [idSesionReemplazo], references: [id], onDelete: SetNull)
+  sesionesReemplazadas SesionAutenticacion[] @relation("rotacion_sesiones")
+
+  @@index([idUsuario])
+  @@index([fechaExpiracion])
+  @@index([idUsuario, fechaRevocacion, fechaExpiracion])
+  @@map("sesiones_autenticacion")
 }
 
 model Estudiante {

@@ -44,4 +44,18 @@ La configuracion de produccion usa `tsconfig.build.json`; el build elimina artef
 
 ## Fase funcional
 
-Estas decisiones preparan la arquitectura previa a autenticacion. Inicio de sesion, JWT, permisos y CRUD de usuarios aun no estan implementados.
+La arquitectura previa dio paso a la autenticacion backend hasta fase 3: inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion y cambio de contrasena. La autorizacion global por roles y el CRUD administrativo de usuarios aun no estan implementados.
+
+## Identificadores de rol
+
+La autorizacion futura utilizara `roles.codigo`, no el nombre visible. Esto evita que cambios de presentacion rompan reglas de acceso.
+
+## Sesiones renovables
+
+`sesiones_autenticacion` prepara rotacion y revocacion de refresh tokens. Solo persiste un hash unico, nunca el token en texto plano. La sesion conserva expiracion, revocacion, reemplazo, ultimo uso, IP y agente de usuario. El historial no se elimina en cascada.
+
+La sesion se considera activa cuando no esta revocada, no ha expirado y el usuario permanece activo. Los servicios de autenticacion aplican esta regla al renovar tokens y validar operaciones protegidas de la fase 3.
+
+## Politica de credenciales
+
+El entorno define expiracion del access token, dias del refresh token, nombre de cookie, limite y duracion de bloqueo, y costo bcrypt. Los servicios generan JWT, cookies HttpOnly y hashes bcrypt o SHA-256 según el tipo de credencial, sin persistir tokens refresh en texto plano.
