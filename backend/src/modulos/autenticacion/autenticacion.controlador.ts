@@ -4,7 +4,7 @@ import { ErrorNoAutenticado, ErrorValidacion } from '../../compartido/errores/er
 import { responderExito } from '../../compartido/respuestas/respuesta-api.js';
 import { entorno } from '../../configuracion/entorno.js';
 import { esquemaCambiarContrasena, esquemaIniciarSesion } from './autenticacion.esquemas.js';
-import { SolicitudAutenticada } from './autenticacion.tipos.js';
+import { UsuarioAutenticado } from './tipos/control-acceso.tipos.js';
 import { borrarCookieRefresh, configurarCookieRefresh } from './utilidades/cookie-refresh.js';
 import { cambiarContrasena, cerrarSesionActual, cerrarTodasLasSesiones, consultarUsuarioActual, iniciarSesion, renovarAutenticacion } from './autenticacion.servicio.js';
 
@@ -25,8 +25,11 @@ function contexto(req: Request) {
   return { direccionIp: req.ip, agenteUsuario: req.get('user-agent') };
 }
 
-function payload(req: Request) {
-  return (req as SolicitudAutenticada).autenticacion;
+function identidad(req: Request): UsuarioAutenticado {
+  if (!req.usuarioAutenticado) {
+    throw new ErrorNoAutenticado('Autenticacion requerida', 'AUTENTICACION_REQUERIDA');
+  }
+  return req.usuarioAutenticado;
 }
 
 export async function iniciarSesionControlador(req: Request, res: Response) {
@@ -56,25 +59,25 @@ export async function renovarControlador(req: Request, res: Response) {
 }
 
 export async function yoControlador(req: Request, res: Response) {
-  const usuario = await consultarUsuarioActual(payload(req));
+  const usuario = await consultarUsuarioActual(identidad(req).id);
   return responderExito(res, 'Usuario autenticado', { usuario });
 }
 
 export async function cerrarSesionControlador(req: Request, res: Response) {
-  await cerrarSesionActual(payload(req), contexto(req));
+  await cerrarSesionActual(identidad(req), contexto(req));
   borrarCookieRefresh(res);
   return responderExito(res, 'Sesion cerrada correctamente');
 }
 
 export async function cerrarTodasControlador(req: Request, res: Response) {
-  await cerrarTodasLasSesiones(payload(req), contexto(req));
+  await cerrarTodasLasSesiones(identidad(req), contexto(req));
   borrarCookieRefresh(res);
   return responderExito(res, 'Todas las sesiones fueron cerradas');
 }
 
 export async function cambiarContrasenaControlador(req: Request, res: Response) {
   const entrada = validarEntrada(esquemaCambiarContrasena, req.body);
-  await cambiarContrasena(payload(req), entrada, contexto(req));
+  await cambiarContrasena(identidad(req), entrada, contexto(req));
   borrarCookieRefresh(res);
   return responderExito(res, 'Contrasena actualizada. Inicie sesion nuevamente');
 }

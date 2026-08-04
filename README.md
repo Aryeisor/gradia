@@ -65,7 +65,9 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 - `npm run dev:frontend`: inicia Vite.
 - `npm run dev:backend`: inicia Express con `tsx`.
 - `npm run lint`: valida estilo de codigo.
-- `npm run test`: ejecuta pruebas minimas.
+- `npm run test`: ejecuta pruebas unitarias, frontend e integracion PostgreSQL.
+- `npm run test:unit`: ejecuta backend aislado y pruebas frontend sin PostgreSQL real.
+- `npm run test:integration`: ejecuta integracion backend exclusivamente sobre `gradia_test`.
 - `npm run build`: compila backend y frontend.
 - `npm run start --workspace=backend`: inicia el backend compilado.
 - `npm run db:generate`: genera Prisma Client.
@@ -81,7 +83,11 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 - `/api/salud` devuelve 200 con todos los servicios disponibles y 503 si la API responde pero PostgreSQL esta desconectado.
 - El frontend reserva “API no disponible” para errores de red, timeout o ausencia de respuesta.
 
+Swagger/OpenAPI se publica en `/api/docs` para salud, autenticacion y gestion administrativa de usuarios, con Bearer JWT, cookie refresh, ejemplos ficticios y errores documentados.
+
 Las variables `ADMIN_INICIAL_CORREO` y `ADMIN_INICIAL_CONTRASENA` son opcionales como conjunto. Si se configura una, debe configurarse la otra; la contrasena debe tener al menos 12 caracteres y no usar marcadores inseguros en produccion.
+
+Las pruebas de integracion requieren un archivo local `backend/.env.test` con `NODE_ENV=test` y `DATABASE_URL_TEST` apuntando exactamente a `gradia_test`. El archivo esta ignorado por Git. La suite falla antes de modificar datos si falta la variable o el nombre no coincide; nunca reutiliza silenciosamente la base `gradia`.
 
 Variables de autenticacion:
 
@@ -106,7 +112,30 @@ Los roles usan codigos estables (`ADMINISTRADOR`, `DOCENTE`, `ESTUDIANTE`). Los 
 - `POST /api/autenticacion/cerrar-todas`: revoca todas las sesiones del usuario.
 - `PATCH /api/autenticacion/cambiar-contrasena`: actualiza la clave, revoca sesiones y exige un nuevo login.
 
-Las rutas protegidas reciben `Authorization: Bearer <access-token>`. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. El contrato completo se encuentra en `docs/AUTENTICACION.md` y en Swagger bajo `/api/docs`.
+Las rutas protegidas reciben `Authorization: Bearer <access-token>`. El backend valida firma, usuario y sesion, y autoriza con el rol vigente en PostgreSQL. Las rutas generales deben ordenar `autenticar`, `exigirContrasenaActualizada`, `autorizarRoles(...)` y controlador. CORS admite credenciales solo desde `ORIGEN_FRONTEND`. Los contratos completos se encuentran en `docs/AUTENTICACION.md`, `docs/CONTROL_ACCESO.md` y Swagger bajo `/api/docs`.
+
+El frontend restaura la sesion mediante la cookie refresh HttpOnly, mantiene el access token solo en memoria y configura Axios con `withCredentials`. Las solicitudes protegidas agregan Bearer automaticamente; los 401 elegibles comparten una sola renovacion y se reintentan una vez. El token no se almacena en `localStorage`, `sessionStorage` ni cookies JavaScript.
+
+Rutas de autenticacion frontend:
+
+- `/iniciar-sesion`: formulario institucional sin registro publico.
+- `/cambiar-contrasena`: cambio normal u obligatorio y nuevo inicio de sesion.
+- `/sin-autorizacion`: acceso con rol incompatible.
+- `/administrador`, `/docente` y `/estudiante`: paneles protegidos por sesion y rol.
+
+## Gestion visual de usuarios
+
+El administrador dispone de `/administrador/usuarios` para listar, buscar y filtrar cuentas; consultar detalles; crear administradores, docentes y estudiantes; editar datos permitidos; activar o desactivar usuarios; y restablecer contrasenas temporales. La interfaz consume `/api/usuarios` mediante TanStack Query, valida formularios con React Hook Form y Zod, y actualiza la cache despues de cada mutacion.
+
+El rol no puede cambiarse desde la edicion general. Las acciones sensibles requieren confirmacion, muestran las restricciones definidas por el backend y nunca presentan contrasenas, hashes, sesiones ni tokens.
+
+## Seguridad y dependencias
+
+Los secretos reales deben permanecer en `.env` locales ignorados por Git. El refresh token se conserva solo como hash en PostgreSQL; el access token vive en memoria del frontend; la cookie refresh es HttpOnly, SameSite=Lax y Secure en produccion.
+
+`npm audit` reporta alertas conocidas en React Router, la cadena `tar`/`@mapbox/node-pre-gyp`, Vite/esbuild y Vitest. No se ejecuta `npm audit fix --force`; las correcciones relevantes requieren migraciones mayores y estan documentadas en `docs/ESTABILIZACION_AUTENTICACION.md`.
+
+Prisma `6.19.3` muestra una advertencia futura: Prisma 7 movera la configuracion de seed desde `package.json#prisma` a un archivo de configuracion. No se cambia en esta fase.
 
 ## Comprobacion
 
@@ -120,7 +149,9 @@ npm run test
 npm run build
 ```
 
-La arquitectura contiene autenticacion y validaciones reutilizables de coherencia academica. Todavia no implementa autorización global por roles, gestion administrativa de usuarios ni CRUD academicos.
+La arquitectura contiene autenticacion completa en backend y frontend, middlewares de sesion y roles, cambio obligatorio, gestion administrativa de usuarios en la API y su interfaz protegida, ademas de validaciones de coherencia academica. Todavia no incluye recuperacion, registro publico ni CRUD academicos.
+
+El cierre de fase 8 valido 211 pruebas aprobadas: 129 backend, 49 frontend y 33 de integracion PostgreSQL. TypeScript, lint y build deben permanecer en 0 errores antes de avanzar.
 
 ## Estructura
 

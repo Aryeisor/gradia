@@ -1,5 +1,4 @@
-import { Request } from 'express';
-import { CodigoRol, PayloadTokenAcceso } from './tipos/autenticacion.tipos.js';
+import { CodigoRol } from './tipos/autenticacion.tipos.js';
 
 export type ContextoSolicitud = {
   direccionIp?: string;
@@ -28,5 +27,3 @@ export type UsuarioActualSeguro = UsuarioAutenticadoSeguro & {
     estado: string;
   };
 };
-
-export type SolicitudAutenticada = Request & { autenticacion: PayloadTokenAcceso };

@@ -9,7 +9,7 @@ import { logger } from './configuracion/logger.js';
 import { especificacionSwagger } from './configuracion/swagger.js';
 import { manejadorErrores } from './middlewares/manejador-errores.js';
 import { rutaNoEncontrada } from './middlewares/ruta-no-encontrada.js';
-import { rutasApi } from './rutas/index.js';
+import { crearRutasApi } from './rutas/index.js';
 
 export function crearAplicacion() {
   const app = express();
@@ -21,7 +21,7 @@ export function crearAplicacion() {
   app.use(pinoHttp({ logger }));
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(especificacionSwagger));
-  app.use('/api', rutasApi);
+  app.use('/api', crearRutasApi());
   app.use(rutaNoEncontrada);
   app.use(manejadorErrores);
 

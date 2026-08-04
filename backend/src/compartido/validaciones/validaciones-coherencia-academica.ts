@@ -23,13 +23,13 @@ export async function validarCoherenciaUsuarioPerfil(
   if (usuario.estudiante && usuario.docente) {
     throw new ErrorConflicto('Un usuario no puede tener perfiles de estudiante y docente simultaneamente');
   }
-  if (usuario.rol.nombre === 'Estudiante' && (!usuario.estudiante || usuario.docente)) {
+  if (usuario.rol.codigo === 'ESTUDIANTE' && (!usuario.estudiante || usuario.docente)) {
     throw new ErrorConflicto('El perfil academico no coincide con el rol Estudiante');
   }
-  if (usuario.rol.nombre === 'Docente' && (!usuario.docente || usuario.estudiante)) {
+  if (usuario.rol.codigo === 'DOCENTE' && (!usuario.docente || usuario.estudiante)) {
     throw new ErrorConflicto('El perfil academico no coincide con el rol Docente');
   }
-  if (usuario.rol.nombre === 'Administrador' && (usuario.estudiante || usuario.docente)) {
+  if (usuario.rol.codigo === 'ADMINISTRADOR' && (usuario.estudiante || usuario.docente)) {
     throw new ErrorConflicto('El rol Administrador no debe tener un perfil academico');
   }
 }

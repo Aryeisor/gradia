@@ -33,7 +33,10 @@ export function validarTokenAcceso(token: string): PayloadTokenAcceso {
   try {
     const payload = jwt.verify(token, entorno.JWT_SECRET, { algorithms: ['HS256'] });
     return esquemaPayloadAcceso.parse(payload);
-  } catch {
-    throw new ErrorNoAutenticado('Token de acceso invalido o vencido');
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new ErrorNoAutenticado('El token de acceso vencio', 'TOKEN_VENCIDO');
+    }
+    throw new ErrorNoAutenticado('El token de acceso no es valido', 'TOKEN_INVALIDO');
   }
 }

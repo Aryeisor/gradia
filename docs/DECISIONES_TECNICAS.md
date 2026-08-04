@@ -44,17 +44,37 @@ La configuracion de produccion usa `tsconfig.build.json`; el build elimina artef
 
 ## Fase funcional
 
-La arquitectura previa dio paso a la autenticacion backend hasta fase 3: inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion y cambio de contrasena. La autorizacion global por roles y el CRUD administrativo de usuarios aun no estan implementados.
+La autenticacion backend y frontend incluye inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion, cambio de contrasena, middlewares de sesion/roles/cambio obligatorio, gestion administrativa de usuarios en la API y gestion visual de usuarios para `ADMINISTRADOR`.
+
+Las rutas academicas funcionales aun no estan implementadas. Los paneles de administrador, docente y estudiante son contenedores iniciales; no hay planes de estudio funcionales, matriculas, asignaciones, actividades evaluativas, registro de calificaciones, boletines, reportes ni exportaciones.
 
 ## Identificadores de rol
 
-La autorizacion futura utilizara `roles.codigo`, no el nombre visible. Esto evita que cambios de presentacion rompan reglas de acceso.
+La autorizacion utiliza el valor vigente de `roles.codigo`, no el nombre visible ni el claim historico del JWT. Esto evita que cambios de presentacion rompan reglas y retira permisos anteriores inmediatamente cuando cambia el rol en PostgreSQL.
+
+## Identidad y precision temporal
+
+Express recibe una identidad minima tipada con usuario, sesion, rol y cambio obligatorio. El claim `iat` usa segundos, mientras PostgreSQL conserva milisegundos; por ello, una contrasena se considera posterior al token desde el inicio del segundo siguiente a `iat`. La tolerancia menor de un segundo evita falsos rechazos para tokens emitidos legitimamente dentro del mismo segundo.
 
 ## Sesiones renovables
 
 `sesiones_autenticacion` prepara rotacion y revocacion de refresh tokens. Solo persiste un hash unico, nunca el token en texto plano. La sesion conserva expiracion, revocacion, reemplazo, ultimo uso, IP y agente de usuario. El historial no se elimina en cascada.
 
 La sesion se considera activa cuando no esta revocada, no ha expirado y el usuario permanece activo. Los servicios de autenticacion aplican esta regla al renovar tokens y validar operaciones protegidas de la fase 3.
+
+## Aislamiento de pruebas de integracion
+
+Las pruebas unitarias no requieren PostgreSQL. Las pruebas de integracion cargan `backend/.env.test`, exigen `DATABASE_URL_TEST` y rechazan cualquier base distinta de `gradia_test` antes de preparar o limpiar datos. La comprobacion se repite contra `current_database()` antes de cada operacion destructiva. No se usa `DATABASE_URL` como respaldo.
+
+Cada instancia de Express crea sus propios routers y su propio almacen del rate limiter. Esto conserva el aislamiento entre instancias de prueba y evita compartir contadores en memoria accidentalmente.
+
+## Deuda tecnica de dependencias
+
+Las alertas npm pendientes requieren cambios mayores de Vite/Vitest, React Router o bcrypt y no tienen una correccion compatible dentro de esta fase. Sus mitigaciones y alcance estan registrados en `docs/ESTABILIZACION_AUTENTICACION.md`.
+
+Prisma `6.19.3` aun admite `package.json#prisma`, pero advierte que Prisma 7 exigira trasladar el seeder a `prisma.config.ts`. La migracion se aplaza hasta una actualizacion mayor controlada.
+
+Las pruebas de integracion emiten una advertencia de Node por `url.parse()`. El origen observado esta en dependencias transitivas usadas por tooling/Prisma durante pruebas; no se detecto uso propio en codigo de Gradia. La recomendacion futura es actualizar dependencias mayores en una rama dedicada y mantener el uso directo de `new URL()` en codigo propio.
 
 ## Politica de credenciales
 

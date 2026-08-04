@@ -13,7 +13,18 @@ const servicios = vi.hoisted(() => ({
   cambiarContrasena: vi.fn()
 }));
 
+const acceso = vi.hoisted(() => ({
+  buscarUsuario: vi.fn(),
+  buscarSesion: vi.fn()
+}));
+
 vi.mock('../src/modulos/autenticacion/autenticacion.servicio.js', () => servicios);
+vi.mock('../src/infraestructura/prisma/cliente-prisma.js', () => ({
+  prisma: {
+    usuario: { findUnique: acceso.buscarUsuario },
+    sesionAutenticacion: { findUnique: acceso.buscarSesion }
+  }
+}));
 
 import { crearAplicacion } from '../src/app.js';
 import { manejadorErrores } from '../src/middlewares/manejador-errores.js';
@@ -28,6 +39,19 @@ const usuarioSeguro = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  acceso.buscarUsuario.mockResolvedValue({
+    id: 1n,
+    estado: true,
+    debeCambiarContrasena: true,
+    contrasenaActualizadaEn: null,
+    rol: { codigo: 'ADMINISTRADOR' }
+  });
+  acceso.buscarSesion.mockResolvedValue({
+    id: 2n,
+    idUsuario: 1n,
+    fechaRevocacion: null,
+    fechaExpiracion: new Date(Date.now() + 60_000)
+  });
   servicios.iniciarSesion.mockResolvedValue({ tokenAcceso: accessToken, refreshToken: 'a'.repeat(64), usuario: usuarioSeguro });
   servicios.renovarAutenticacion.mockResolvedValue({ tokenAcceso: accessToken, refreshToken: 'b'.repeat(64) });
   servicios.consultarUsuarioActual.mockResolvedValue({ ...usuarioSeguro, estudiante: null, docente: null });

@@ -12,19 +12,31 @@ describe('servicio JWT de acceso', () => {
     expect(payload).not.toHaveProperty('contrasena');
   });
 
-  it('rechaza tokens invalidos', () => expect(() => validarTokenAcceso('token.invalido')).toThrow());
+  it('rechaza tokens invalidos con un codigo estable', () => {
+    expect(() => validarTokenAcceso('token.invalido')).toThrow(
+      expect.objectContaining({ codigoInterno: 'TOKEN_INVALIDO' })
+    );
+  });
 
   it('rechaza tokens vencidos', () => {
     const token = jwt.sign({ rol: 'DOCENTE', sid: '2', tipo: 'access' }, entorno.JWT_SECRET, {
       subject: '1', algorithm: 'HS256', expiresIn: -1
     });
-    expect(() => validarTokenAcceso(token)).toThrow();
+    expect(() => validarTokenAcceso(token)).toThrow(
+      expect.objectContaining({ codigoInterno: 'TOKEN_VENCIDO' })
+    );
   });
 
-  it('rechaza payloads con campos o roles incorrectos', () => {
-    const token = jwt.sign({ rol: 'SUPERUSUARIO', sid: '2', tipo: 'access', correo: 'x@y.test' }, entorno.JWT_SECRET, {
+  it.each([
+    { rol: 'SUPERUSUARIO', sid: '2', tipo: 'access', correo: 'x@y.test' },
+    { rol: 'DOCENTE', sid: '2', tipo: 'refresh' },
+    { rol: 'DOCENTE', sid: 'no-numerico', tipo: 'access' }
+  ])('rechaza payloads ajenos al contrato de acceso', (payload) => {
+    const token = jwt.sign(payload, entorno.JWT_SECRET, {
       subject: '1', algorithm: 'HS256', expiresIn: '15m'
     });
-    expect(() => validarTokenAcceso(token)).toThrow();
+    expect(() => validarTokenAcceso(token)).toThrow(
+      expect.objectContaining({ codigoInterno: 'TOKEN_INVALIDO' })
+    );
   });
 });

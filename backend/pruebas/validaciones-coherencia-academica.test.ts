@@ -25,7 +25,8 @@ describe('validaciones de coherencia academica con mocks (sin modificar PostgreS
     await expect(validarAsignaturaPerteneceAreaPlan(db, { idAsignatura: 1n, idAreaPlanEstudio: 2n })).rejects.toBeInstanceOf(ErrorConflicto);
   });
 
-  it.each([[true, 'compatible'], [false, 'incompatible']] as const)('valida grupo y plan %s', async (compatible) => {
+  it.each([[true, 'compatible'], [false, 'incompatible']] as const)('valida grupo y plan %s', async (compatible, _caso) => {
+    void _caso;
     const db = cliente({ grupo: { findUnique: vi.fn().mockResolvedValue({ idGrado: 3n }) }, areaPlanEstudio: { findFirst: vi.fn().mockResolvedValue(compatible ? { id: 1n } : null) } });
     const promesa = validarGrupoCompatibleConPlan(db, { idGrupo: 1n, idPlanEstudio: 2n });
     if (compatible) await expect(promesa).resolves.toBeUndefined(); else await expect(promesa).rejects.toBeInstanceOf(ErrorConflicto);
@@ -48,7 +49,8 @@ describe('validaciones de coherencia academica con mocks (sin modificar PostgreS
     await expect(validarCoherenciaActividadEvaluativa(db, { idAsignacionAcademica: 1n, idPeriodoAcademico: 2n, porcentaje: new Prisma.Decimal(20) })).rejects.toBeInstanceOf(ErrorConflicto);
   });
 
-  it.each([[null, 'sin matricula'], [{ id: 9n }, 'matriculado en otro grupo']] as const)('rechaza estudiante %s', async (matricula) => {
+  it.each([[null, 'sin matricula'], [{ id: 9n }, 'matriculado en otro grupo']] as const)('rechaza estudiante %s', async (matricula, _caso) => {
+    void _caso;
     const db = cliente({
       estudiante: { findUnique: vi.fn().mockResolvedValue({ estado: 'ACTIVO' }) },
       actividadEvaluativa: { findUnique: vi.fn().mockResolvedValue({ fechaActividad: new Date(), periodoAcademico: { estado: 'ABIERTO', idAnioAcademico: 1n }, asignacionAcademica: { estado: 'ACTIVA', idGrupo: 5n } }) },
@@ -65,7 +67,7 @@ describe('validaciones de coherencia academica con mocks (sin modificar PostgreS
   });
 
   it('rechaza rol y perfil incompatibles', async () => {
-    const db = cliente({ usuario: { findUnique: vi.fn().mockResolvedValue({ rol: { nombre: 'Estudiante' }, estudiante: null, docente: { id: 2n } }) } });
+    const db = cliente({ usuario: { findUnique: vi.fn().mockResolvedValue({ rol: { codigo: 'ESTUDIANTE', nombre: 'Estudiante' }, estudiante: null, docente: { id: 2n } }) } });
     await expect(validarCoherenciaUsuarioPerfil(db, 1n)).rejects.toBeInstanceOf(ErrorConflicto);
   });
 });

@@ -4,7 +4,7 @@ import { NavegacionPrincipal } from '../componentes/navegacion/NavegacionPrincip
 export function DisenioDocente() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <NavegacionPrincipal perfil="Docente" />
+      <NavegacionPrincipal />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <Outlet />
       </main>
