@@ -29,6 +29,18 @@ El restablecimiento administrativo valida y genera un nuevo hash, marca `debe_ca
 
 Creacion, actualizacion, cambio de estado y restablecimiento se ejecutan en transacciones serializables. La auditoria registra actor, accion, registro afectado, contexto sanitizado y cambios no sensibles. Las acciones son `CREACION_USUARIO`, `ACTUALIZACION_USUARIO`, `ACTIVACION_USUARIO`, `DESACTIVACION_USUARIO` y `RESTABLECIMIENTO_CONTRASENA`.
 
+## Interfaz administrativa
+
+La ruta protegida `/administrador/usuarios` consume exclusivamente la API real y solo esta disponible para el rol `ADMINISTRADOR`. El listado utiliza TanStack Query e incluye busqueda, filtros por rol y estado, paginacion, orden estable y estados de carga, error y resultado vacio.
+
+Desde la misma pantalla se puede consultar el detalle, crear administradores, docentes y estudiantes, editar los campos permitidos, activar o desactivar cuentas y restablecer contrasenas temporales. Los formularios usan React Hook Form y Zod; los campos de perfil cambian segun el rol al crear y el rol permanece visible pero inmutable durante la edicion.
+
+Las mutaciones invalidan las consultas afectadas para refrescar listado y detalle. Las confirmaciones explican la revocacion de sesiones y las restricciones de autodesactivacion y ultimo administrador. Los errores HTTP 400, 401, 403, 404 y 409 se convierten en mensajes seguros sin exponer datos internos.
+
+## Pruebas de interfaz
+
+Las pruebas frontend usan mocks de la capa de hooks y servicios, sin solicitudes reales. Cubren listado, carga, error, estado vacio, busqueda, filtros, paginacion, creacion por cada rol, campos condicionales, conflictos unicos, detalle, edicion, rol inmutable, activacion, desactivacion, confirmaciones, restablecimiento y bloqueo para usuarios no administradores.
+
 ## Limites de esta fase
 
-No se implementan cambio de rol, eliminacion fisica, envio de correos, frontend ni modulos academicos. Las pruebas de integracion utilizan exclusivamente `gradia_test` y eliminan sus usuarios, sesiones y auditorias tecnicas al finalizar.
+No se implementan cambio de rol, eliminacion fisica, envio de correos ni modulos academicos. Las pruebas de integracion backend utilizan exclusivamente `gradia_test` y eliminan sus usuarios, sesiones y auditorias tecnicas al finalizar.

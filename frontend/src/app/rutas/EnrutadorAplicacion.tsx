@@ -15,6 +15,7 @@ import { RutaProtegida } from '../../modulos/autenticacion/componentes/RutaProte
 import { RutaPublica } from '../../modulos/autenticacion/componentes/RutaPublica';
 import { PaginaCambiarContrasena } from '../../modulos/autenticacion/paginas/PaginaCambiarContrasena';
 import { PaginaIniciarSesion } from '../../modulos/autenticacion/paginas/PaginaIniciarSesion';
+import { PaginaUsuarios } from '../../modulos/usuarios/paginas/PaginaUsuarios';
 
 export function EnrutadorAplicacion() {
   return (
@@ -34,6 +35,7 @@ export function EnrutadorAplicacion() {
           <Route element={<RutaPorRol roles={['ADMINISTRADOR']} />}>
             <Route path="/administrador" element={<DisenioAdministrador />}>
               <Route index element={<PanelAdministrador />} />
+              <Route path="usuarios" element={<PaginaUsuarios />} />
             </Route>
           </Route>
           <Route element={<RutaPorRol roles={['DOCENTE']} />}>

@@ -121,6 +121,12 @@ Rutas de autenticacion frontend:
 - `/sin-autorizacion`: acceso con rol incompatible.
 - `/administrador`, `/docente` y `/estudiante`: paneles protegidos por sesion y rol.
 
+## Gestion visual de usuarios
+
+El administrador dispone de `/administrador/usuarios` para listar, buscar y filtrar cuentas; consultar detalles; crear administradores, docentes y estudiantes; editar datos permitidos; activar o desactivar usuarios; y restablecer contrasenas temporales. La interfaz consume `/api/usuarios` mediante TanStack Query, valida formularios con React Hook Form y Zod, y actualiza la cache despues de cada mutacion.
+
+El rol no puede cambiarse desde la edicion general. Las acciones sensibles requieren confirmacion, muestran las restricciones definidas por el backend y nunca presentan contrasenas, hashes, sesiones ni tokens.
+
 ## Comprobacion
 
 ```bash
@@ -133,7 +139,7 @@ npm run test
 npm run build
 ```
 
-La arquitectura contiene autenticacion completa en backend y frontend, middlewares de sesion y roles, cambio obligatorio, gestion administrativa de usuarios en la API y validaciones de coherencia academica. Todavia no incluye gestion visual de usuarios, recuperacion, registro publico ni CRUD academicos.
+La arquitectura contiene autenticacion completa en backend y frontend, middlewares de sesion y roles, cambio obligatorio, gestion administrativa de usuarios en la API y su interfaz protegida, ademas de validaciones de coherencia academica. Todavia no incluye recuperacion, registro publico ni CRUD academicos.
 
 ## Estructura
 
