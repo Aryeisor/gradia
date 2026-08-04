@@ -57,16 +57,24 @@ La auditoria conserva accion, usuario, IP, agente, fecha, resultado y motivo san
 
 ## Auditoria npm
 
-Estado inicial y posterior: 9 alertas totales (`5 moderate`, `2 high`, `2 critical`) y 4 dentro del arbol marcado como produccion (`2 moderate`, `1 high`, `1 critical`). `npm audit fix --dry-run` no propuso cambios compatibles. No se uso `--force` y no se actualizaron paquetes.
+Estado de cierre fase 8: 9 alertas totales (`5 moderate`, `2 high`, `2 critical`) y 4 dentro del arbol marcado como produccion (`2 moderate`, `1 high`, `1 critical`). No se uso `npm audit fix`, no se uso `--force` y no se actualizaron dependencias.
 
 | Paquete | Tipo y alcance | Riesgo en Gradia | Correccion y decision |
 | --- | --- | --- | --- |
-| `react-router-dom` / `react-router` | Directa/transitiva, frontend de produccion, moderada | El open redirect puede alcanzar navegacion cliente; la variante SSR no aplica porque Gradia no usa SSR. | La rama corregida disponible es 7.x. Cambio mayor aplazado; limitar destinos de navegacion a rutas internas. |
-| `tar` / `@mapbox/node-pre-gyp` | Transitiva de bcrypt, produccion segun npm, critica/alta | Se usa durante instalacion de binarios, no en endpoints ni para procesar archivos de usuarios en runtime. | La correccion sale del contrato 6.x y conduce a bcrypt 6. Mantener lockfile y registros confiables; migrar con pruebas en una fase dedicada. |
-| `vite` / `esbuild` | Directa/transitiva, desarrollo, alta/moderada | Afecta el servidor de desarrollo; Vite no se publica como servidor de produccion. | npm exige Vite 8, cambio mayor. Usar dev server solo en localhost y actualizar en una fase dedicada. |
-| `vitest` / `vite-node` / `@vitest/mocker` | Directa/transitivas, desarrollo, critica/moderadas | Solo ejecutan pruebas con fuentes controladas; no forman parte del artefacto backend/frontend. | npm exige Vitest 4, cambio mayor. Mantener CI aislado y planificar migracion conjunta. |
+| Paquete | Severidad | Tipo | Produccion/desarrollo | Version instalada | Correccion disponible | Alcanzabilidad y riesgo | Mitigacion |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `react-router-dom` / `react-router` | Moderada | Directa/transitiva | Produccion frontend | `6.30.4` | `7.18.x`, cambio mayor | Open redirect en navegacion cliente si se aceptan destinos externos no validados; SSR hydration no aplica porque Gradia no usa SSR. | Mantener navegacion a rutas internas conocidas y planificar migracion a React Router 7 con pruebas. |
+| `tar` / `@mapbox/node-pre-gyp` | Critica/alta | Transitiva de `bcrypt` | Marcada como produccion por npm | `tar 6.2.1`, `@mapbox/node-pre-gyp 1.0.11` | Cambio de cadena que lleva a versiones mayores | Alcance principal en instalacion/extraccion de binarios; Gradia no acepta ni extrae archivos tar de usuarios en runtime. Riesgo de supply chain/instalacion. | Usar lockfile y registro confiable; migrar a `bcrypt` 6 o alternativa mantenida en una rama dedicada. |
+| `vite` / `esbuild` | Alta/moderada | Directa/transitiva | Desarrollo | `vite 5.4.21`, `esbuild` transitivo | Vite 8, cambio mayor | Afecta dev server; no se publica como servidor de produccion. | Ejecutar Vite solo en localhost y actualizar Vite junto con plugin React en una fase de dependencias. |
+| `vitest` / `vite-node` / `@vitest/mocker` | Critica/moderada | Directa/transitivas | Desarrollo/pruebas | `vitest 2.1.9` | Vitest 4, cambio mayor | Solo corre pruebas con fuentes controladas; no forma parte de artefactos desplegados. | Mantener CI aislado; migrar Vitest/Vite de forma conjunta. |
 
 No queda una vulnerabilidad critica de runtime alcanzable con correccion compatible disponible. Permanecen alertas de instalacion/desarrollo y una migracion mayor pendiente; deben revisarse de nuevo antes de despliegue publico.
+
+Una vulnerabilidad critica alcanzable en produccion seria bloqueo para despliegue. En el estado actual, la alerta critica de produccion reportada por npm corresponde a la cadena `tar` usada por instalacion de `bcrypt`, no a endpoints HTTP ni procesamiento de archivos de usuario en runtime; aun asi debe resolverse antes de un despliegue productivo formal.
+
+## Advertencia `url.parse()`
+
+Las suites emiten `DEP0169` por `url.parse()`. El codigo propio de Gradia usa `new URL()` para validar `DATABASE_URL_TEST`; la advertencia proviene de dependencias transitivas durante pruebas o tooling. El riesgo actual es bajo para runtime propio, pero debe revisarse al actualizar Prisma/Vite/Vitest y dependencias de prueba.
 
 ## Prisma 7
 
@@ -89,6 +97,6 @@ npm audit --omit=dev
 
 ## Aislamiento, limitaciones y siguiente fase
 
-`gradia` no participa en pruebas y conserva estructura, datos, usuarios y sesiones. `gradia_test` queda sin usuarios, sesiones ni auditorias ficticias al finalizar y puede prepararse de nuevo de forma segura. No se implementaron autorizacion global, gestion de usuarios ni frontend de autenticacion.
+`gradia` no participa en pruebas automatizadas y conserva estructura, datos, usuarios y sesiones. `gradia_test` queda sin usuarios, sesiones ni auditorias ficticias al finalizar y puede prepararse de nuevo de forma segura. El cierre actual ya incluye autenticacion frontend/backend, control de acceso, gestion administrativa de usuarios en backend y gestion visual de usuarios para administrador; los modulos academicos funcionales siguen pendientes.
 
-La siguiente fase es control de acceso: middleware de autenticacion reutilizable, autorizacion por `roles.codigo` y politica de cambio obligatorio, despues de aprobar su diseno independiente.
+La siguiente fase recomendada es iniciar modulos academicos de forma incremental, empezando por catalogos/estructura academica o por el flujo que el equipo priorice, sin mezclarlo con la migracion mayor de dependencias.

@@ -15,6 +15,8 @@ Este documento describe la API backend de autenticacion, sus middlewares de cont
 
 Las respuestas exitosas usan `{ exito, mensaje, datos? }`. Los errores usan `{ exito: false, mensaje, errores, codigo? }` con 400, 401, 403, 409, 429, 500 o 503 segun corresponda. El login usa mensajes genericos para no revelar si un correo existe.
 
+Swagger/OpenAPI se publica en `/api/docs` e incluye Bearer JWT, cookie de renovacion, ejemplos ficticios, rutas publicas, rutas protegidas, errores y codigos internos. Los codigos internos relevantes son `AUTENTICACION_REQUERIDA`, `TOKEN_INVALIDO`, `TOKEN_VENCIDO`, `SESION_INVALIDA`, `USUARIO_INACTIVO`, `CREDENCIALES_DESACTUALIZADAS`, `ROL_NO_AUTORIZADO` y `CAMBIO_CONTRASENA_REQUERIDO`.
+
 ## Contrasenas
 
 La entrada se valida sin recortarla ni modificarla: exige entre 12 caracteres y 72 bytes UTF-8, rechaza espacios al inicio o final y marcadores evidentemente inseguros. Los hashes se generan con bcrypt y el costo `BCRYPT_COSTO`; ni contrasenas ni hashes se escriben en logs o respuestas.
@@ -58,6 +60,8 @@ Requiere un access token y la clave actual. La confirmacion debe coincidir, la n
 Las pruebas HTTP ordinarias simulan los servicios y no modifican PostgreSQL. Las pruebas de ciclo completo usan exclusivamente `DATABASE_URL_TEST`, validan que la base sea exactamente `gradia_test` y fallan si la variable falta o apunta a otro nombre. No existe respaldo silencioso hacia `DATABASE_URL`.
 
 `npm run test:unit` ejecuta pruebas aisladas de backend y frontend. Las pruebas React simulan servicios y cubren formularios, restauracion, rutas, roles, cambio obligatorio, logout, almacenamiento efimero y renovacion concurrente sin solicitudes reales. `npm run test:integration` carga `backend/.env.test`, prepara cuentas ficticias, ejecuta los endpoints con PostgreSQL real y limpia solo esos datos. `npm run test` ejecuta ambos grupos.
+
+El cierre de fase 8 valida 129 pruebas backend unitarias/API, 49 pruebas frontend y 33 pruebas de integracion PostgreSQL: 211 aprobadas, 0 fallidas y 0 omitidas.
 
 La estrategia de roles, cambio obligatorio, codigos 401/403 y orden de middlewares se documenta en `docs/CONTROL_ACCESO.md`.
 

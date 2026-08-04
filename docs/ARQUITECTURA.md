@@ -62,12 +62,14 @@ Los errores operacionales usan los codigos 400, 401, 403, 404, 409 y 503. Los er
 
 El proceso maneja SIGINT, SIGTERM, errores HTTP, rechazos no controlados y excepciones no capturadas. Deja de aceptar solicitudes, cierra HTTP, desconecta Prisma y cuenta con un timeout de 10 segundos antes de forzar la salida.
 
-## API inicial
+## API actual
 
 - `GET /api/salud`: devuelve 200 cuando API y PostgreSQL funcionan, o 503 cuando Express funciona pero PostgreSQL no. La ausencia de respuesta HTTP representa una API inaccesible.
-- `GET /api/docs`: documentacion OpenAPI inicial.
+- `GET /api/docs`: Swagger/OpenAPI con Bearer JWT, cookie refresh, autenticacion, usuarios, errores y ejemplos ficticios.
+- `/api/autenticacion/*`: inicio de sesion, renovacion, usuario actual, cierre de sesion, cierre total y cambio de contrasena.
+- `/api/usuarios/*`: gestion administrativa de usuarios exclusiva para `ADMINISTRADOR`.
 
-Los endpoints actuales de consulta y cierre de autenticacion usan el middleware definitivo. Login y renovacion permanecen publicos respecto del access token. Los routers usados para probar roles se construyen solo dentro de las pruebas y no forman parte de la API normal.
+Login y renovacion permanecen publicos respecto del access token. Los endpoints protegidos usan el middleware definitivo. Los routers usados para probar roles se construyen solo dentro de las pruebas y no forman parte de la API normal.
 
 ## Variables de entorno
 
@@ -76,3 +78,7 @@ El backend valida variables obligatorias con Zod. `ADMIN_INICIAL_CORREO` y `ADMI
 ## Validaciones relacionales
 
 `compartido/validaciones/validaciones-coherencia-academica.ts` concentra reglas que requieren consultas: rol/perfil, area/asignatura, grupo/plan, asignaciones, actividades, calificaciones y matricula activa anual. Reciben Prisma o un cliente transaccional, diferencian ausencia y conflicto, y no crean registros.
+
+## Cierre fase 8
+
+El cierre de integracion final valida TypeScript, lint, pruebas, build, Swagger, seguridad y documentacion. No agrega migraciones, dependencias ni modulos academicos. La base `gradia_test` se usa para integraciones destructivas y queda limpia; `gradia` conserva datos de desarrollo.

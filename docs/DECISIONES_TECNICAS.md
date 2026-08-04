@@ -44,7 +44,9 @@ La configuracion de produccion usa `tsconfig.build.json`; el build elimina artef
 
 ## Fase funcional
 
-La autenticacion backend incluye inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion, cambio de contrasena y middlewares definitivos de fase 4. El CRUD administrativo de usuarios y las rutas academicas protegidas aun no estan implementados.
+La autenticacion backend y frontend incluye inicio de sesion, JWT de acceso, refresh tokens opacos, sesiones, rotacion, revocacion, cambio de contrasena, middlewares de sesion/roles/cambio obligatorio, gestion administrativa de usuarios en la API y gestion visual de usuarios para `ADMINISTRADOR`.
+
+Las rutas academicas funcionales aun no estan implementadas. Los paneles de administrador, docente y estudiante son contenedores iniciales; no hay planes de estudio funcionales, matriculas, asignaciones, actividades evaluativas, registro de calificaciones, boletines, reportes ni exportaciones.
 
 ## Identificadores de rol
 
@@ -71,6 +73,8 @@ Cada instancia de Express crea sus propios routers y su propio almacen del rate 
 Las alertas npm pendientes requieren cambios mayores de Vite/Vitest, React Router o bcrypt y no tienen una correccion compatible dentro de esta fase. Sus mitigaciones y alcance estan registrados en `docs/ESTABILIZACION_AUTENTICACION.md`.
 
 Prisma `6.19.3` aun admite `package.json#prisma`, pero advierte que Prisma 7 exigira trasladar el seeder a `prisma.config.ts`. La migracion se aplaza hasta una actualizacion mayor controlada.
+
+Las pruebas de integracion emiten una advertencia de Node por `url.parse()`. El origen observado esta en dependencias transitivas usadas por tooling/Prisma durante pruebas; no se detecto uso propio en codigo de Gradia. La recomendacion futura es actualizar dependencias mayores en una rama dedicada y mantener el uso directo de `new URL()` en codigo propio.
 
 ## Politica de credenciales
 

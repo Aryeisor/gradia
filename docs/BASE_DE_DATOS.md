@@ -4,6 +4,8 @@ La base de datos se llama `gradia` y usa PostgreSQL. Las tablas y columnas fisic
 
 ## Tablas
 
+La estructura actual contiene 22 tablas funcionales y 23 tablas si se cuenta `_prisma_migrations`.
+
 1. `roles`: roles de acceso.
 2. `usuarios`: cuentas del sistema.
 3. `estudiantes`: perfil academico de estudiante.
@@ -102,3 +104,9 @@ La migracion `autenticacion_estructura_sesiones` agrega unicidad para `roles.cod
 ## Politica de eliminacion
 
 No se usa eliminacion en cascada indiscriminada. Los registros academicos se conservan con `Restrict` o `SetNull` cuando corresponde. Usuarios, estudiantes, docentes, planes, matriculas, asignaciones, actividades, calificaciones e historiales deben preservarse.
+
+## Estado de cierre fase 8
+
+- `gradia`: 3 migraciones aplicadas, 22 tablas funcionales, 23 contando `_prisma_migrations`; datos de desarrollo conservados.
+- `gradia_test`: misma estructura y 3 migraciones; despues de la suite queda con cero usuarios, cero sesiones y cero registros de auditoria tecnicos.
+- No existen migraciones nuevas para la gestion visual de usuarios ni para el cierre de fase 8.

@@ -87,4 +87,4 @@ El estado `inicializando` bloquea decisiones de navegacion hasta finalizar la re
 
 ## Limitaciones
 
-El backend ya expone gestion administrativa de usuarios. El frontend de esta fase no incluye esa interfaz visual, recuperacion de contrasena, registro publico ni modulos academicos nuevos.
+El backend y el frontend ya exponen gestion administrativa de usuarios para `ADMINISTRADOR`. No existen recuperacion de contrasena por correo, registro publico, verificacion de correo, autenticacion social, MFA, cambio administrativo de rol, eliminacion fisica ni modulos academicos funcionales.

@@ -13,6 +13,8 @@ El modulo `/api/usuarios` permite que un administrador autenticado gestione cuen
 - `PATCH /api/usuarios/:id/estado`: activacion o desactivacion logica.
 - `POST /api/usuarios/:id/restablecer-contrasena`: asignacion de una contrasena temporal.
 
+Swagger/OpenAPI documenta estos endpoints con seguridad Bearer, exclusividad para `ADMINISTRADOR`, parametros de paginacion/filtros, perfiles condicionales de docente y estudiante, respuestas 200/201 y errores 400, 401, 403, 404, 409, 500 y 503. Los ejemplos usan datos ficticios y no incluyen contrasenas reales, tokens, cookies ni hashes.
+
 ## Seguridad y coherencia
 
 La contrasena temporal se valida con la politica existente y se almacena exclusivamente como hash bcrypt. Las respuestas, registros de auditoria y consultas omiten contrasenas, hashes, sesiones y tokens. El rol no forma parte del contrato de edicion general.
@@ -40,6 +42,8 @@ Las mutaciones invalidan las consultas afectadas para refrescar listado y detall
 ## Pruebas de interfaz
 
 Las pruebas frontend usan mocks de la capa de hooks y servicios, sin solicitudes reales. Cubren listado, carga, error, estado vacio, busqueda, filtros, paginacion, creacion por cada rol, campos condicionales, conflictos unicos, detalle, edicion, rol inmutable, activacion, desactivacion, confirmaciones, restablecimiento y bloqueo para usuarios no administradores.
+
+La integracion backend con PostgreSQL cubre creacion de administradores, docentes y estudiantes, duplicados, perfil incompatible, listado, busqueda, filtros, actualizacion, activacion/desactivacion, autodesactivacion, proteccion del ultimo administrador, restablecimiento y auditoria sanitizada.
 
 ## Limites de esta fase
 

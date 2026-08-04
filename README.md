@@ -83,6 +83,8 @@ El backend limpia `backend/dist`, compila solo `backend/src` y arranca desde `ba
 - `/api/salud` devuelve 200 con todos los servicios disponibles y 503 si la API responde pero PostgreSQL esta desconectado.
 - El frontend reserva “API no disponible” para errores de red, timeout o ausencia de respuesta.
 
+Swagger/OpenAPI se publica en `/api/docs` para salud, autenticacion y gestion administrativa de usuarios, con Bearer JWT, cookie refresh, ejemplos ficticios y errores documentados.
+
 Las variables `ADMIN_INICIAL_CORREO` y `ADMIN_INICIAL_CONTRASENA` son opcionales como conjunto. Si se configura una, debe configurarse la otra; la contrasena debe tener al menos 12 caracteres y no usar marcadores inseguros en produccion.
 
 Las pruebas de integracion requieren un archivo local `backend/.env.test` con `NODE_ENV=test` y `DATABASE_URL_TEST` apuntando exactamente a `gradia_test`. El archivo esta ignorado por Git. La suite falla antes de modificar datos si falta la variable o el nombre no coincide; nunca reutiliza silenciosamente la base `gradia`.
@@ -127,6 +129,14 @@ El administrador dispone de `/administrador/usuarios` para listar, buscar y filt
 
 El rol no puede cambiarse desde la edicion general. Las acciones sensibles requieren confirmacion, muestran las restricciones definidas por el backend y nunca presentan contrasenas, hashes, sesiones ni tokens.
 
+## Seguridad y dependencias
+
+Los secretos reales deben permanecer en `.env` locales ignorados por Git. El refresh token se conserva solo como hash en PostgreSQL; el access token vive en memoria del frontend; la cookie refresh es HttpOnly, SameSite=Lax y Secure en produccion.
+
+`npm audit` reporta alertas conocidas en React Router, la cadena `tar`/`@mapbox/node-pre-gyp`, Vite/esbuild y Vitest. No se ejecuta `npm audit fix --force`; las correcciones relevantes requieren migraciones mayores y estan documentadas en `docs/ESTABILIZACION_AUTENTICACION.md`.
+
+Prisma `6.19.3` muestra una advertencia futura: Prisma 7 movera la configuracion de seed desde `package.json#prisma` a un archivo de configuracion. No se cambia en esta fase.
+
 ## Comprobacion
 
 ```bash
@@ -140,6 +150,8 @@ npm run build
 ```
 
 La arquitectura contiene autenticacion completa en backend y frontend, middlewares de sesion y roles, cambio obligatorio, gestion administrativa de usuarios en la API y su interfaz protegida, ademas de validaciones de coherencia academica. Todavia no incluye recuperacion, registro publico ni CRUD academicos.
+
+El cierre de fase 8 valido 211 pruebas aprobadas: 129 backend, 49 frontend y 33 de integracion PostgreSQL. TypeScript, lint y build deben permanecer en 0 errores antes de avanzar.
 
 ## Estructura
 
