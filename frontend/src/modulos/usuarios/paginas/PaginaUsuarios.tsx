@@ -1,6 +1,7 @@
 import { Plus, Search, Users } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { CodigoRol } from '../../autenticacion/tipos/autenticacion.tipos';
 import { Dialogo } from '../componentes/Dialogo';
 import { DetalleUsuario } from '../componentes/DetalleUsuario';
 import { FormularioEstadoUsuario } from '../componentes/FormularioEstadoUsuario';
@@ -20,7 +21,30 @@ import { mensajeErrorUsuarios } from '../servicios/usuarios.servicio';
 import { ConsultaUsuarios, EntradaActualizarUsuario, EntradaCrearUsuario, UsuarioResumen } from '../tipos/usuarios.tipos';
 
 type Accion = 'crear' | 'detalle' | 'editar' | 'estado' | 'contrasena' | null;
+type RolFijoUsuarios = Extract<CodigoRol, 'DOCENTE' | 'ESTUDIANTE'>;
+
+type Props = {
+  rolFijo?: RolFijoUsuarios;
+};
+
 const consultaInicial: ConsultaUsuarios = { pagina: 1, limite: 10, buscar: '', rol: 'TODOS', estado: 'TODOS' };
+const contenidoPorRol: Record<RolFijoUsuarios | 'TODOS', { titulo: string; descripcion: string; boton: string }> = {
+  TODOS: {
+    titulo: 'Gestion de usuarios',
+    descripcion: 'Administre cuentas, perfiles y acceso al sistema.',
+    boton: 'Crear usuario'
+  },
+  DOCENTE: {
+    titulo: 'Gestion de docentes',
+    descripcion: 'Consulte y administre las cuentas con perfil docente.',
+    boton: 'Crear docente'
+  },
+  ESTUDIANTE: {
+    titulo: 'Gestion de estudiantes',
+    descripcion: 'Consulte y administre las cuentas con perfil estudiante.',
+    boton: 'Crear estudiante'
+  }
+};
 
 function entradaDesdeFormulario(datos: DatosFormularioUsuario, crear: boolean): EntradaCrearUsuario | EntradaActualizarUsuario {
   const base = {
@@ -35,8 +59,8 @@ function entradaDesdeFormulario(datos: DatosFormularioUsuario, crear: boolean): 
   return crear ? { ...base, rol: datos.rol, contrasenaTemporal: datos.contrasenaTemporal ?? '' } : base;
 }
 
-export function PaginaUsuarios() {
-  const [consulta, setConsulta] = useState(consultaInicial);
+export function PaginaUsuarios({ rolFijo }: Props) {
+  const [consulta, setConsulta] = useState<ConsultaUsuarios>({ ...consultaInicial, rol: rolFijo ?? 'TODOS' });
   const [busqueda, setBusqueda] = useState('');
   const [accion, setAccion] = useState<Accion>(null);
   const [seleccionado, setSeleccionado] = useState<UsuarioResumen | null>(null);
@@ -47,6 +71,11 @@ export function PaginaUsuarios() {
   const actualizar = useActualizarUsuario(seleccionado?.id ?? '');
   const cambiarEstado = useCambiarEstadoUsuario(seleccionado?.id ?? '');
   const restablecer = useRestablecerContrasena(seleccionado?.id ?? '');
+  const contenido = contenidoPorRol[rolFijo ?? 'TODOS'];
+
+  useEffect(() => {
+    setConsulta((actual) => ({ ...actual, pagina: 1, rol: rolFijo ?? 'TODOS' }));
+  }, [rolFijo]);
 
   function abrir(nuevaAccion: Exclude<Accion, null>, usuario?: UsuarioResumen) {
     setSeleccionado(usuario ?? null);
@@ -60,7 +89,7 @@ export function PaginaUsuarios() {
   }
   function buscar(evento: FormEvent) {
     evento.preventDefault();
-    setConsulta((actual) => ({ ...actual, pagina: 1, buscar: busqueda.trim() }));
+    setConsulta((actual) => ({ ...actual, pagina: 1, buscar: busqueda.trim(), rol: rolFijo ?? actual.rol }));
   }
   async function guardarUsuario(datos: DatosFormularioUsuario) {
     setErrorOperacion(null);
@@ -86,7 +115,7 @@ export function PaginaUsuarios() {
   async function guardarContrasena(datos: DatosRestablecerContrasena) {
     try {
       await restablecer.mutateAsync(datos);
-      toast.success('Contraseña restablecida; las sesiones fueron revocadas');
+      toast.success('Contrasena restablecida; las sesiones fueron revocadas');
       cerrar();
     } catch (error) { setErrorOperacion(mensajeErrorUsuarios(error)); }
   }
@@ -96,23 +125,27 @@ export function PaginaUsuarios() {
     <section className="space-y-5">
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-gradia-azul"><Users className="h-4 w-4" />Administración</div>
-          <h1 className="mt-1 text-2xl font-bold text-gradia-tinta">Gestión de usuarios</h1>
-          <p className="mt-1 text-sm text-slate-600">Administre cuentas, perfiles y acceso al sistema.</p>
+          <div className="flex items-center gap-2 text-sm font-semibold text-gradia-azul"><Users className="h-4 w-4" />Administracion</div>
+          <h1 className="mt-1 text-2xl font-bold text-gradia-tinta">{contenido.titulo}</h1>
+          <p className="mt-1 text-sm text-slate-600">{contenido.descripcion}</p>
         </div>
-        <button className="flex items-center justify-center gap-2 rounded-md bg-gradia-azul px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" onClick={() => abrir('crear')} type="button"><Plus className="h-4 w-4" />Crear usuario</button>
+        <button className="flex items-center justify-center gap-2 rounded-md bg-gradia-azul px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" onClick={() => abrir('crear')} type="button"><Plus className="h-4 w-4" />{contenido.boton}</button>
       </header>
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_190px_170px]">
+      <div className={`grid gap-3 ${rolFijo ? 'lg:grid-cols-[minmax(260px,1fr)_170px]' : 'lg:grid-cols-[minmax(260px,1fr)_190px_170px]'}`}>
         <form className="flex" onSubmit={buscar}>
           <label className="sr-only" htmlFor="buscar-usuarios">Buscar usuarios</label>
-          <input className="min-w-0 flex-1 rounded-l-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gradia-azul" id="buscar-usuarios" onChange={(evento) => setBusqueda(evento.target.value)} placeholder="Nombre, correo, documento o código" value={busqueda} />
+          <input className="min-w-0 flex-1 rounded-l-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gradia-azul" id="buscar-usuarios" onChange={(evento) => setBusqueda(evento.target.value)} placeholder="Nombre, correo, documento o codigo" value={busqueda} />
           <button aria-label="Buscar" className="grid w-11 place-items-center rounded-r-md bg-slate-800 text-white" title="Buscar" type="submit"><Search className="h-4 w-4" /></button>
         </form>
-        <label className="sr-only" htmlFor="filtro-rol">Filtrar por rol</label>
-        <select className="rounded-md border border-slate-300 px-3 py-2 text-sm" id="filtro-rol" onChange={(evento) => setConsulta((actual) => ({ ...actual, pagina: 1, rol: evento.target.value as ConsultaUsuarios['rol'] }))} value={consulta.rol}>
-          <option value="TODOS">Todos los roles</option><option value="ADMINISTRADOR">Administrador</option><option value="DOCENTE">Docente</option><option value="ESTUDIANTE">Estudiante</option>
-        </select>
+        {!rolFijo && (
+          <>
+            <label className="sr-only" htmlFor="filtro-rol">Filtrar por rol</label>
+            <select className="rounded-md border border-slate-300 px-3 py-2 text-sm" id="filtro-rol" onChange={(evento) => setConsulta((actual) => ({ ...actual, pagina: 1, rol: evento.target.value as ConsultaUsuarios['rol'] }))} value={consulta.rol}>
+              <option value="TODOS">Todos los roles</option><option value="ADMINISTRADOR">Administrador</option><option value="DOCENTE">Docente</option><option value="ESTUDIANTE">Estudiante</option>
+            </select>
+          </>
+        )}
         <label className="sr-only" htmlFor="filtro-estado">Filtrar por estado</label>
         <select className="rounded-md border border-slate-300 px-3 py-2 text-sm" id="filtro-estado" onChange={(evento) => setConsulta((actual) => ({ ...actual, pagina: 1, estado: evento.target.value as ConsultaUsuarios['estado'] }))} value={consulta.estado}>
           <option value="TODOS">Todos los estados</option><option value="ACTIVOS">Activos</option><option value="INACTIVOS">Inactivos</option>
@@ -122,17 +155,17 @@ export function PaginaUsuarios() {
       <div className="flex items-center justify-between text-xs text-slate-500"><span>{lista.data?.paginacion.total ?? 0} usuarios</span>{lista.isFetching && !lista.isLoading && <span>Actualizando...</span>}</div>
       <TablaUsuarios usuarios={lista.data?.usuarios ?? []} cargando={lista.isLoading} error={lista.isError} alReintentar={() => void lista.refetch()} alAccion={(tipo, usuario) => abrir(tipo, usuario)} />
 
-      <nav aria-label="Paginación de usuarios" className="flex items-center justify-between">
+      <nav aria-label="Paginacion de usuarios" className="flex items-center justify-between">
         <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold disabled:opacity-40" disabled={consulta.pagina <= 1} onClick={() => setConsulta((actual) => ({ ...actual, pagina: actual.pagina - 1 }))} type="button">Anterior</button>
-        <span className="text-sm text-slate-600">Página {consulta.pagina} de {Math.max(paginas, 1)}</span>
+        <span className="text-sm text-slate-600">Pagina {consulta.pagina} de {Math.max(paginas, 1)}</span>
         <button className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold disabled:opacity-40" disabled={paginas === 0 || consulta.pagina >= paginas} onClick={() => setConsulta((actual) => ({ ...actual, pagina: actual.pagina + 1 }))} type="button">Siguiente</button>
       </nav>
 
-      <Dialogo abierto={accion === 'crear'} titulo="Crear usuario" descripcion="Registre una cuenta y su perfil compatible." alCerrar={cerrar} ancho="amplio"><FormularioUsuario modo="crear" enviando={crear.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarUsuario} /></Dialogo>
+      <Dialogo abierto={accion === 'crear'} titulo={contenido.boton} descripcion="Registre una cuenta y su perfil compatible." alCerrar={cerrar} ancho="amplio"><FormularioUsuario modo="crear" rolFijo={rolFijo} enviando={crear.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarUsuario} /></Dialogo>
       <Dialogo abierto={accion === 'detalle'} titulo="Detalle del usuario" alCerrar={cerrar} ancho="amplio">{detalle.isLoading ? <p>Cargando detalle...</p> : detalle.isError || !detalle.data ? <p className="text-red-700">{mensajeErrorUsuarios(detalle.error)}</p> : <DetalleUsuario usuario={detalle.data} />}</Dialogo>
-      <Dialogo abierto={accion === 'editar'} titulo="Editar usuario" descripcion="El rol permanece bloqueado durante la edición." alCerrar={cerrar} ancho="amplio">{detalle.isLoading ? <p>Cargando usuario...</p> : detalle.data ? <FormularioUsuario modo="editar" usuario={detalle.data} enviando={actualizar.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarUsuario} /> : <p className="text-red-700">No fue posible cargar el usuario.</p>}</Dialogo>
+      <Dialogo abierto={accion === 'editar'} titulo="Editar usuario" descripcion="El rol permanece bloqueado durante la edicion." alCerrar={cerrar} ancho="amplio">{detalle.isLoading ? <p>Cargando usuario...</p> : detalle.data ? <FormularioUsuario modo="editar" usuario={detalle.data} enviando={actualizar.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarUsuario} /> : <p className="text-red-700">No fue posible cargar el usuario.</p>}</Dialogo>
       <Dialogo abierto={accion === 'estado'} titulo={seleccionado?.estado ? 'Desactivar usuario' : 'Activar usuario'} descripcion={seleccionado ? `${seleccionado.nombres} ${seleccionado.apellidos}` : undefined} alCerrar={cerrar}>{seleccionado && <FormularioEstadoUsuario usuario={seleccionado} enviando={cambiarEstado.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarEstado} />}</Dialogo>
-      <Dialogo abierto={accion === 'contrasena'} titulo="Restablecer contraseña" descripcion={seleccionado ? `${seleccionado.nombres} ${seleccionado.apellidos}` : undefined} alCerrar={cerrar}>{seleccionado && <FormularioRestablecerContrasena enviando={restablecer.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarContrasena} />}</Dialogo>
+      <Dialogo abierto={accion === 'contrasena'} titulo="Restablecer contrasena" descripcion={seleccionado ? `${seleccionado.nombres} ${seleccionado.apellidos}` : undefined} alCerrar={cerrar}>{seleccionado && <FormularioRestablecerContrasena enviando={restablecer.isPending} errorGeneral={errorOperacion} alCancelar={cerrar} alEnviar={guardarContrasena} />}</Dialogo>
     </section>
   );
 }

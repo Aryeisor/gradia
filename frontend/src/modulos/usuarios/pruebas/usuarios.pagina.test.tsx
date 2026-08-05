@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+﻿import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PaginaUsuarios } from '../paginas/PaginaUsuarios';
@@ -57,7 +57,7 @@ beforeEach(() => {
 describe('listado administrativo de usuarios', () => {
   it('muestra el listado y sus columnas', () => {
     render(<PaginaUsuarios />);
-    expect(screen.getByRole('heading', { name: 'Gestión de usuarios' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Gestion de usuarios' })).toBeInTheDocument();
     expect(screen.getByText('Diana Docente')).toBeInTheDocument();
     expect(screen.getByText('DOC-20')).toBeInTheDocument();
   });
@@ -94,6 +94,13 @@ describe('listado administrativo de usuarios', () => {
     await userEvent.selectOptions(screen.getByLabelText('Filtrar por rol'), 'DOCENTE');
     await userEvent.selectOptions(screen.getByLabelText('Filtrar por estado'), 'INACTIVOS');
     expect(mocks.useLista).toHaveBeenLastCalledWith(expect.objectContaining({ rol: 'DOCENTE', estado: 'INACTIVOS' }));
+  });
+
+  it('reutiliza la pagina con rol fijo para docentes', () => {
+    render(<PaginaUsuarios rolFijo="DOCENTE" />);
+    expect(screen.getByRole('heading', { name: 'Gestion de docentes' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Filtrar por rol')).not.toBeInTheDocument();
+    expect(mocks.useLista).toHaveBeenLastCalledWith(expect.objectContaining({ rol: 'DOCENTE' }));
   });
 
   it('avanza en la paginación', async () => {

@@ -7,11 +7,13 @@ import {
   esquemaCrearUsuario,
   esquemaFormularioUsuario
 } from '../esquemas/usuarios.esquemas';
+import { CodigoRol } from '../../autenticacion/tipos/autenticacion.tipos';
 import { UsuarioDetalle } from '../tipos/usuarios.tipos';
 
 type Props = {
   modo: 'crear' | 'editar';
   usuario?: UsuarioDetalle;
+  rolFijo?: CodigoRol;
   enviando: boolean;
   errorGeneral?: string | null;
   alCancelar: () => void;
@@ -20,14 +22,14 @@ type Props = {
 
 const clasesInput = 'mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-gradia-azul focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500';
 
-function valoresUsuario(usuario?: UsuarioDetalle): DatosFormularioUsuario {
+function valoresUsuario(usuario?: UsuarioDetalle, rolFijo?: CodigoRol): DatosFormularioUsuario {
   return {
     nombres: usuario?.nombres ?? '',
     apellidos: usuario?.apellidos ?? '',
     tipoDocumento: usuario?.tipoDocumento ?? '',
     numeroDocumento: usuario?.numeroDocumento ?? '',
     correo: usuario?.correo ?? '',
-    rol: usuario?.rol.codigo ?? 'DOCENTE',
+    rol: usuario?.rol.codigo ?? rolFijo ?? 'DOCENTE',
     contrasenaTemporal: '',
     confirmacionContrasena: '',
     codigoDocente: usuario?.docente?.codigoDocente ?? '',
@@ -39,7 +41,7 @@ function valoresUsuario(usuario?: UsuarioDetalle): DatosFormularioUsuario {
   };
 }
 
-export function FormularioUsuario({ modo, usuario, enviando, errorGeneral, alCancelar, alEnviar }: Props) {
+export function FormularioUsuario({ modo, usuario, rolFijo, enviando, errorGeneral, alCancelar, alEnviar }: Props) {
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const {
     register,
@@ -49,9 +51,9 @@ export function FormularioUsuario({ modo, usuario, enviando, errorGeneral, alCan
     formState: { errors }
   } = useForm<DatosFormularioUsuario>({
     resolver: zodResolver(modo === 'crear' ? esquemaCrearUsuario : esquemaFormularioUsuario),
-    defaultValues: valoresUsuario(usuario)
+    defaultValues: valoresUsuario(usuario, rolFijo)
   });
-  useEffect(() => reset(valoresUsuario(usuario)), [reset, usuario]);
+  useEffect(() => reset(valoresUsuario(usuario, rolFijo)), [reset, rolFijo, usuario]);
   const rol = watch('rol');
 
   const campo = (nombre: keyof DatosFormularioUsuario, etiqueta: string, tipo = 'text') => (
@@ -82,18 +84,18 @@ export function FormularioUsuario({ modo, usuario, enviando, errorGeneral, alCan
             <label htmlFor="rol-usuario">Rol</label>
             <select
               id="rol-usuario"
-              aria-describedby={modo === 'editar' ? 'ayuda-rol-usuario' : undefined}
+              aria-describedby={modo === 'editar' || rolFijo ? 'ayuda-rol-usuario' : undefined}
               {...register('rol')}
               className={clasesInput}
-              disabled={modo === 'editar'}
+              disabled={modo === 'editar' || Boolean(rolFijo)}
             >
               <option value="ADMINISTRADOR">Administrador</option>
               <option value="DOCENTE">Docente</option>
               <option value="ESTUDIANTE">Estudiante</option>
             </select>
-            {modo === 'editar' && (
+            {(modo === 'editar' || rolFijo) && (
               <span id="ayuda-rol-usuario" className="mt-1 block text-xs text-slate-500">
-                El rol no puede modificarse desde la edición general.
+                {rolFijo ? 'El rol esta fijado por la seccion actual.' : 'El rol no puede modificarse desde la edición general.'}
               </span>
             )}
           </div>
