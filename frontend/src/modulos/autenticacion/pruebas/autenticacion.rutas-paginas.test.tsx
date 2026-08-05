@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+﻿import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -54,14 +54,14 @@ describe('pagina de inicio de sesion', () => {
     renderizarLogin();
     expect(screen.getByRole('heading', { name: 'Iniciar sesion' })).toBeInTheDocument();
     expect(screen.getByLabelText('Correo')).toBeInTheDocument();
-    expect(screen.getByLabelText('Contrasena')).toBeInTheDocument();
+    expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
   });
 
   it('valida un correo invalido', async () => {
     const usuario = userEvent.setup();
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'correo-invalido');
-    await usuario.type(screen.getByLabelText('Contrasena'), 'valor');
+    await usuario.type(screen.getByLabelText('Contraseña'), 'valor');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
     expect(await screen.findByText('Ingrese un correo valido')).toBeInTheDocument();
   });
@@ -79,7 +79,7 @@ describe('pagina de inicio de sesion', () => {
     autenticacion.valor = valor({ iniciarSesion: vi.fn().mockResolvedValue(usuarioBase) });
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'ada@example.test');
-    await usuario.type(screen.getByLabelText('Contrasena'), 'Clave-Ficticia-2026!');
+    await usuario.type(screen.getByLabelText('Contraseña'), 'Clave-Ficticia-2026!');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
     expect(await screen.findByText('panel administrador')).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe('pagina de inicio de sesion', () => {
     autenticacion.valor = valor({ iniciarSesion: vi.fn().mockRejectedValue(new Error('401')) });
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'ada@example.test');
-    await usuario.type(screen.getByLabelText('Contrasena'), 'Incorrecta-2026!');
+    await usuario.type(screen.getByLabelText('Contraseña'), 'Incorrecta-2026!');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('No fue posible iniciar sesion');
   });

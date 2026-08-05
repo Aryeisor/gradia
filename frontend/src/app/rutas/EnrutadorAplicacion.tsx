@@ -36,6 +36,8 @@ export function EnrutadorAplicacion() {
             <Route path="/administrador" element={<DisenioAdministrador />}>
               <Route index element={<PanelAdministrador />} />
               <Route path="usuarios" element={<PaginaUsuarios />} />
+              <Route path="docentes" element={<PaginaUsuarios rolFijo="DOCENTE" />} />
+              <Route path="estudiantes" element={<PaginaUsuarios rolFijo="ESTUDIANTE" />} />
             </Route>
           </Route>
           <Route element={<RutaPorRol roles={['DOCENTE']} />}>
