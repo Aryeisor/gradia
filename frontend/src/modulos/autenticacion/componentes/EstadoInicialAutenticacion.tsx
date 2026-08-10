@@ -9,7 +9,7 @@ export function EstadoInicialAutenticacion() {
         </span>
         <div>
           <p className="font-semibold text-gradia-tinta">Gradia</p>
-          <p className="mt-1 text-sm text-slate-600">Restaurando sesion</p>
+          <p className="mt-1 text-sm text-slate-600">Restaurando sesión</p>
         </div>
         <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin text-gradia-azul" />
       </div>

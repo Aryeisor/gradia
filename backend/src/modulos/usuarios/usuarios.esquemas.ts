@@ -15,7 +15,7 @@ const fechaNacimiento = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha debe u
   .refine((valor) => {
     const fecha = new Date(`${valor}T00:00:00.000Z`);
     return !Number.isNaN(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor;
-  }, 'La fecha de nacimiento no es valida');
+  }, 'La fecha de nacimiento no es válida');
 
 const perfilEstudianteCreacion = z.object({
   codigoEstudiante: texto(30),
@@ -86,16 +86,16 @@ export const esquemaRestablecerContrasena = z.object({
     contexto.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['confirmacionContrasena'],
-      message: 'La confirmacion no coincide con la contrasena temporal'
+      message: 'La confirmación no coincide con la contraseña temporal'
     });
   }
 });
 
 export const esquemaParametrosUsuario = z.object({
-  id: z.string().regex(/^\d+$/, 'El identificador no es valido').transform((valor) => BigInt(valor))
+  id: z.string().regex(/^\d+$/, 'El identificador no es válido').transform((valor) => BigInt(valor))
 }).strict().refine(
   (datos) => datos.id > 0n && datos.id <= 9_223_372_036_854_775_807n,
-  { message: 'El identificador no es valido', path: ['id'] }
+  { message: 'El identificador no es válido', path: ['id'] }
 );
 
 export const esquemaConsultaUsuarios = z.object({

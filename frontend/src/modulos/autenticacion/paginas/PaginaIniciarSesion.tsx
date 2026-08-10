@@ -31,7 +31,7 @@ export function PaginaIniciarSesion() {
         { replace: true }
       );
     } catch {
-      setErrorGeneral('No fue posible iniciar sesion con las credenciales indicadas.');
+      setErrorGeneral('No fue posible iniciar sesión con las credenciales indicadas.');
     }
   }
 
@@ -50,24 +50,24 @@ export function PaginaIniciarSesion() {
             Acceso institucional
           </p>
           <h1 className="login-panel-title">
-            Gestion academica clara, segura y centralizada
+            Gestión académica clara, segura y centralizada
           </h1>
           <p className="login-panel-description">
-            Ingrese con la cuenta asignada por la institucion para continuar con sus procesos
-            academicos.
+            Ingrese con la cuenta asignada por la institución para continuar con sus procesos
+            académicos.
           </p>
         </div>
 
         <p className="login-panel-footer">
-          Sistema de gestion academica
+          Sistema de gestión académica
         </p>
       </section>
 
       <section className="login-form-panel">
         <div className="login-card">
           <div>
-            <p className="login-kicker">Inicio de sesion</p>
-            <h2 className="login-card-title">Iniciar sesion</h2>
+            <p className="login-kicker">Inicio de sesión</p>
+            <h2 className="login-card-title">Iniciar sesión</h2>
             <p className="login-card-description">
               Bienvenido de nuevo. Ingrese su correo institucional y contraseña para acceder a
               Gradia.
@@ -114,10 +114,10 @@ export function PaginaIniciarSesion() {
                   type={mostrarContrasena ? 'text' : 'password'}
                 />
                 <button
-                  aria-label={mostrarContrasena ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+                  aria-label={mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   className="login-password-toggle"
                   onClick={() => setMostrarContrasena((actual) => !actual)}
-                  title={mostrarContrasena ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+                  title={mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   type="button"
                 >
                   {mostrarContrasena ? <EyeOff aria-hidden="true" className="h-5 w-5" /> : <Eye aria-hidden="true" className="h-5 w-5" />}

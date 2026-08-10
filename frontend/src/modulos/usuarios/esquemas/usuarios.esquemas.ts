@@ -19,8 +19,8 @@ export const esquemaFormularioUsuario = z.object({
   nombres: texto('Los nombres', 100),
   apellidos: texto('Los apellidos', 100),
   tipoDocumento: texto('El tipo de documento', 30),
-  numeroDocumento: texto('El numero de documento', 30),
-  correo: z.string().trim().email('Ingrese un correo valido').max(150),
+  numeroDocumento: texto('El número de documento', 30),
+  correo: z.string().trim().email('Ingrese un correo válido').max(150),
   rol: z.enum(['ADMINISTRADOR', 'DOCENTE', 'ESTUDIANTE']),
   contrasenaTemporal: z.string().optional(),
   confirmacionContrasena: z.string().optional(),
@@ -32,11 +32,11 @@ export const esquemaFormularioUsuario = z.object({
   direccion: opcional(200)
 }).superRefine((datos, contexto) => {
   if (datos.rol === 'DOCENTE' && !datos.codigoDocente?.trim()) {
-    contexto.addIssue({ code: 'custom', path: ['codigoDocente'], message: 'El codigo docente es obligatorio' });
+    contexto.addIssue({ code: 'custom', path: ['codigoDocente'], message: 'El código docente es obligatorio' });
   }
   if (datos.rol === 'ESTUDIANTE') {
     if (!datos.codigoEstudiante?.trim()) {
-      contexto.addIssue({ code: 'custom', path: ['codigoEstudiante'], message: 'El codigo estudiantil es obligatorio' });
+      contexto.addIssue({ code: 'custom', path: ['codigoEstudiante'], message: 'El código estudiantil es obligatorio' });
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(datos.fechaNacimiento ?? '')) {
       contexto.addIssue({ code: 'custom', path: ['fechaNacimiento'], message: 'La fecha de nacimiento es obligatoria' });
@@ -50,11 +50,11 @@ export const esquemaCrearUsuario = esquemaFormularioUsuario.superRefine((datos, 
     contexto.addIssue({
       code: 'custom',
       path: ['contrasenaTemporal'],
-      message: resultado.error.issues[0]?.message ?? 'La contrasena temporal no es valida'
+      message: resultado.error.issues[0]?.message ?? 'La contraseña temporal no es válida'
     });
   }
   if (datos.contrasenaTemporal !== datos.confirmacionContrasena) {
-    contexto.addIssue({ code: 'custom', path: ['confirmacionContrasena'], message: 'Las contrasenas no coinciden' });
+    contexto.addIssue({ code: 'custom', path: ['confirmacionContrasena'], message: 'Las contraseñas no coinciden' });
   }
 });
 
@@ -64,10 +64,10 @@ export const esquemaEstadoUsuario = z.object({
 
 export const esquemaRestablecerContrasena = z.object({
   contrasenaTemporal: esquemaContrasenaTemporal,
-  confirmacionContrasena: z.string().min(1, 'Confirme la contrasena temporal')
+  confirmacionContrasena: z.string().min(1, 'Confirme la contraseña temporal')
 }).refine((datos) => datos.contrasenaTemporal === datos.confirmacionContrasena, {
   path: ['confirmacionContrasena'],
-  message: 'Las contrasenas no coinciden'
+  message: 'Las contraseñas no coinciden'
 });
 
 export type DatosFormularioUsuario = z.infer<typeof esquemaFormularioUsuario>;

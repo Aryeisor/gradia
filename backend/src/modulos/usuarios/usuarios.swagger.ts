@@ -294,8 +294,8 @@
  * /api/usuarios/{id}/restablecer-contrasena:
  *   post:
  *     tags: [Usuarios]
- *     summary: Establece una contrasena temporal y revoca todas las sesiones.
- *     description: No devuelve la contrasena temporal ni el hash. Marca cambio obligatorio.
+ *     summary: Establece una contraseña temporal y revoca todas las sesiones.
+ *     description: No devuelve la contraseña temporal ni el hash. Marca cambio obligatorio.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - { in: path, name: id, required: true, schema: { type: string, pattern: '^\\d+$' }, example: '15' }
@@ -305,7 +305,7 @@
  *         application/json:
  *           schema: { $ref: '#/components/schemas/EntradaRestablecerContrasena' }
  *     responses:
- *       '200': { description: Contrasena restablecida sin devolver datos sensibles. }
+ *       '200': { description: Contraseña restablecida sin devolver datos sensibles. }
  *       '400': { $ref: '#/components/responses/EntradaInvalida' }
  *       '401': { $ref: '#/components/responses/AutenticacionRequerida' }
  *       '403': { $ref: '#/components/responses/RolNoAutorizado' }

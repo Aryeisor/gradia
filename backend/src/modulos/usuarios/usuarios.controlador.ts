@@ -26,7 +26,7 @@ function validarEntrada<T>(esquema: { parse(valor: unknown): T }, valor: unknown
   } catch (error) {
     if (error instanceof ZodError) {
       throw new ErrorValidacion(
-        'Los datos enviados no son validos',
+        'Los datos enviados no son válidos',
         error.issues.map((issue) => ({ campo: issue.path.join('.'), mensaje: issue.message }))
       );
     }
@@ -36,7 +36,7 @@ function validarEntrada<T>(esquema: { parse(valor: unknown): T }, valor: unknown
 
 function contexto(req: Request): ContextoAdministracionUsuario {
   if (!req.usuarioAutenticado) {
-    throw new ErrorNoAutenticado('Autenticacion requerida', 'AUTENTICACION_REQUERIDA');
+    throw new ErrorNoAutenticado('Autenticación requerida', 'AUTENTICACION_REQUERIDA');
   }
   return {
     idAdministrador: req.usuarioAutenticado.id,
@@ -85,5 +85,5 @@ export async function cambiarEstadoUsuarioControlador(req: Request, res: Respons
 export async function restablecerContrasenaControlador(req: Request, res: Response) {
   const entrada = validarEntrada(esquemaRestablecerContrasena, req.body);
   await restablecerContrasenaUsuario(idUsuario(req), entrada, contexto(req));
-  return responderExito(res, 'Contrasena restablecida. El usuario debera cambiarla al iniciar sesion');
+  return responderExito(res, 'Contraseña restablecida. El usuario deberá cambiarla al iniciar sesión');
 }

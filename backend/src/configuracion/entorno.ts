@@ -29,7 +29,7 @@ export const esquemaEntorno = z
       contexto.addIssue({
         code: z.ZodIssueCode.custom,
         path: tieneCorreo ? ['ADMIN_INICIAL_CONTRASENA'] : ['ADMIN_INICIAL_CORREO'],
-        message: 'El correo y la contrasena del administrador inicial deben definirse juntos'
+        message: 'El correo y la contraseña del administrador inicial deben definirse juntos'
       });
     }
     if (variables.NODE_ENV === 'production' && variables.ADMIN_INICIAL_CONTRASENA) {
@@ -38,7 +38,7 @@ export const esquemaEntorno = z
         contexto.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['ADMIN_INICIAL_CONTRASENA'],
-          message: 'La contrasena del administrador contiene un marcador inseguro'
+          message: 'La contraseña del administrador contiene un marcador inseguro'
         });
       }
     }

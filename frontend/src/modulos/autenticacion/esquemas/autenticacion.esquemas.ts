@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const esquemaInicioSesion = z.object({
-  correo: z.string().trim().email('Ingrese un correo valido').max(150)
+  correo: z.string().trim().email('Ingrese un correo válido').max(150)
     .transform((valor) => valor.toLowerCase()),
-  contrasena: z.string().min(1, 'La contrasena es obligatoria').max(72)
+  contrasena: z.string().min(1, 'La contraseña es obligatoria').max(72)
 });
 
 const contrasenaNueva = z.string()
@@ -16,15 +16,15 @@ const contrasenaNueva = z.string()
   );
 
 export const esquemaCambioContrasena = z.object({
-  contrasenaActual: z.string().min(1, 'La contrasena actual es obligatoria').max(72),
+  contrasenaActual: z.string().min(1, 'La contraseña actual es obligatoria').max(72),
   contrasenaNueva,
-  confirmacionContrasena: z.string().min(1, 'Confirme la nueva contrasena').max(72)
+  confirmacionContrasena: z.string().min(1, 'Confirme la nueva contraseña').max(72)
 }).superRefine((datos, contexto) => {
   if (datos.contrasenaNueva !== datos.confirmacionContrasena) {
     contexto.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['confirmacionContrasena'],
-      message: 'La confirmacion no coincide con la nueva contrasena'
+      message: 'La confirmación no coincide con la nueva contraseña'
     });
   }
 });

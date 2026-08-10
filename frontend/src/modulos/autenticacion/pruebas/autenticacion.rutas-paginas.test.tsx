@@ -37,7 +37,7 @@ beforeEach(() => {
   autenticacion.valor = valor();
 });
 
-describe('pagina de inicio de sesion', () => {
+describe('página de inicio de sesión', () => {
   function renderizarLogin() {
     return render(
       <MemoryRouter initialEntries={['/iniciar-sesion']}>
@@ -52,26 +52,26 @@ describe('pagina de inicio de sesion', () => {
 
   it('renderiza el formulario de login', () => {
     renderizarLogin();
-    expect(screen.getByRole('heading', { name: 'Iniciar sesion' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
     expect(screen.getByLabelText('Correo')).toBeInTheDocument();
     expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
   });
 
-  it('valida un correo invalido', async () => {
+  it('valida un correo inválido', async () => {
     const usuario = userEvent.setup();
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'correo-invalido');
     await usuario.type(screen.getByLabelText('Contraseña'), 'valor');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
-    expect(await screen.findByText('Ingrese un correo valido')).toBeInTheDocument();
+    expect(await screen.findByText('Ingrese un correo válido')).toBeInTheDocument();
   });
 
-  it('exige la contrasena', async () => {
+  it('exige la contraseña', async () => {
     const usuario = userEvent.setup();
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'ada@example.test');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
-    expect(await screen.findByText('La contrasena es obligatoria')).toBeInTheDocument();
+    expect(await screen.findByText('La contraseña es obligatoria')).toBeInTheDocument();
   });
 
   it('redirige al panel en un login correcto', async () => {
@@ -84,19 +84,19 @@ describe('pagina de inicio de sesion', () => {
     expect(await screen.findByText('panel administrador')).toBeInTheDocument();
   });
 
-  it('muestra un error generico para login incorrecto', async () => {
+  it('muestra un error genérico para login incorrecto', async () => {
     const usuario = userEvent.setup();
     autenticacion.valor = valor({ iniciarSesion: vi.fn().mockRejectedValue(new Error('401')) });
     renderizarLogin();
     await usuario.type(screen.getByLabelText('Correo'), 'ada@example.test');
     await usuario.type(screen.getByLabelText('Contraseña'), 'Incorrecta-2026!');
     await usuario.click(screen.getByRole('button', { name: 'Ingresar' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('No fue posible iniciar sesion');
+    expect(await screen.findByRole('alert')).toHaveTextContent('No fue posible iniciar sesión');
   });
 });
 
-describe('rutas de autenticacion', () => {
-  it('redirige una ruta privada sin sesion al login', () => {
+describe('rutas de autenticación', () => {
+  it('redirige una ruta privada sin sesión al login', () => {
     render(
       <MemoryRouter initialEntries={['/privada']}>
         <Routes>
@@ -108,7 +108,7 @@ describe('rutas de autenticacion', () => {
     expect(screen.getByText('login requerido')).toBeInTheDocument();
   });
 
-  it('envia un rol incorrecto a sin autorizacion', () => {
+  it('envía un rol incorrecto a sin autorización', () => {
     autenticacion.valor = valor({
       estado: 'autenticado',
       usuario: { ...usuarioBase, rol: { codigo: 'DOCENTE', nombre: 'Docente' } }
@@ -159,8 +159,8 @@ describe('rutas de autenticacion', () => {
   });
 });
 
-describe('cambio de contrasena', () => {
-  it('limpia la sesion y redirige al login despues del cambio exitoso', async () => {
+describe('cambio de contraseña', () => {
+  it('limpia la sesión y redirige al login después del cambio exitoso', async () => {
     const usuario = userEvent.setup();
     const cambiarContrasena = vi.fn().mockResolvedValue(undefined);
     autenticacion.valor = valor({ estado: 'autenticado', usuario: usuarioBase, cambiarContrasena });
@@ -172,10 +172,10 @@ describe('cambio de contrasena', () => {
         </Routes>
       </MemoryRouter>
     );
-    await usuario.type(screen.getByLabelText('Contrasena actual'), 'Actual-Segura-2026!');
-    await usuario.type(screen.getByLabelText('Nueva contrasena'), 'Nueva-Segura-2026!X');
-    await usuario.type(screen.getByLabelText('Confirmar contrasena'), 'Nueva-Segura-2026!X');
-    await usuario.click(screen.getByRole('button', { name: 'Actualizar contrasena' }));
+    await usuario.type(screen.getByLabelText('Contraseña actual'), 'Actual-Segura-2026!');
+    await usuario.type(screen.getByLabelText('Nueva contraseña'), 'Nueva-Segura-2026!X');
+    await usuario.type(screen.getByLabelText('Confirmar contraseña'), 'Nueva-Segura-2026!X');
+    await usuario.click(screen.getByRole('button', { name: 'Actualizar contraseña' }));
     await waitFor(() => expect(cambiarContrasena).toHaveBeenCalledOnce());
     expect(await screen.findByText('nuevo inicio requerido')).toBeInTheDocument();
   });

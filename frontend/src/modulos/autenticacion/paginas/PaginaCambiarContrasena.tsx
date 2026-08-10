@@ -62,10 +62,10 @@ export function PaginaCambiarContrasena() {
       await cambiarContrasena(datos);
       navegar('/iniciar-sesion', {
         replace: true,
-        state: { mensaje: 'Contrasena actualizada. Inicie sesion nuevamente.' }
+        state: { mensaje: 'Contraseña actualizada. Inicie sesión nuevamente.' }
       });
     } catch {
-      setErrorGeneral('No fue posible actualizar la contrasena. Revise los datos e intente nuevamente.');
+      setErrorGeneral('No fue posible actualizar la contraseña. Revise los datos e intente nuevamente.');
     }
   }
 
@@ -82,11 +82,11 @@ export function PaginaCambiarContrasena() {
           <span className="grid h-11 w-11 place-items-center rounded-md bg-blue-100 text-gradia-azul">
             <LockKeyhole aria-hidden="true" className="h-6 w-6" />
           </span>
-          <h1 className="mt-5 text-3xl font-bold text-gradia-tinta">Cambiar contrasena</h1>
+          <h1 className="mt-5 text-3xl font-bold text-gradia-tinta">Cambiar contraseña</h1>
           <p className="mt-3 max-w-xl leading-7 text-slate-600">
             {usuario?.debeCambiarContrasena
-              ? 'Debe establecer una nueva contrasena antes de continuar.'
-              : 'Actualice la contrasena de su cuenta.'}
+              ? 'Debe establecer una nueva contraseña antes de continuar.'
+              : 'Actualice la contraseña de su cuenta.'}
           </p>
           <div className="mt-8 border-l-4 border-gradia-azul bg-white px-5 py-4">
             <h2 className="font-semibold text-gradia-tinta">Requisitos</h2>
@@ -94,7 +94,7 @@ export function PaginaCambiarContrasena() {
               <li>Al menos 12 caracteres.</li>
               <li>Sin espacios al inicio o al final.</li>
               <li>No utilice valores evidentes o institucionales.</li>
-              <li>La confirmacion debe coincidir.</li>
+              <li>La confirmación debe coincidir.</li>
             </ul>
           </div>
         </section>
@@ -109,21 +109,21 @@ export function PaginaCambiarContrasena() {
             <CampoContrasena
               autoComplete="current-password"
               error={errors.contrasenaActual?.message}
-              etiqueta="Contrasena actual"
+              etiqueta="Contraseña actual"
               id="contrasenaActual"
               registro={register('contrasenaActual')}
             />
             <CampoContrasena
               autoComplete="new-password"
               error={errors.contrasenaNueva?.message}
-              etiqueta="Nueva contrasena"
+              etiqueta="Nueva contraseña"
               id="contrasenaNueva"
               registro={register('contrasenaNueva')}
             />
             <CampoContrasena
               autoComplete="new-password"
               error={errors.confirmacionContrasena?.message}
-              etiqueta="Confirmar contrasena"
+              etiqueta="Confirmar contraseña"
               id="confirmacionContrasena"
               registro={register('confirmacionContrasena')}
             />
@@ -133,7 +133,7 @@ export function PaginaCambiarContrasena() {
               type="submit"
             >
               {isSubmitting && <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />}
-              {isSubmitting ? 'Actualizando' : 'Actualizar contrasena'}
+              {isSubmitting ? 'Actualizando' : 'Actualizar contraseña'}
             </button>
           </form>
         </section>

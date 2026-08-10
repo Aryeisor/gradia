@@ -5,6 +5,6 @@ import { PaginaNoEncontrada } from './PaginaNoEncontrada';
 describe('PaginaNoEncontrada', () => {
   it('muestra el mensaje de ruta inexistente', () => {
     render(<PaginaNoEncontrada />);
-    expect(screen.getByText('Pagina no encontrada')).toBeInTheDocument();
+    expect(screen.getByText('Página no encontrada')).toBeInTheDocument();
   });
 });

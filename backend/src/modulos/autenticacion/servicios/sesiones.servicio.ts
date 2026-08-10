@@ -59,7 +59,7 @@ export async function revocarSesion(
   ahora = new Date()
 ): Promise<SesionSegura> {
   const sesion = await cliente.sesionAutenticacion.findUnique({ where: { id: idSesion }, select: { id: true } });
-  if (!sesion) throw new ErrorNoEncontrado('Sesion de autenticacion no encontrada');
+  if (!sesion) throw new ErrorNoEncontrado('Sesión de autenticación no encontrada');
   return cliente.sesionAutenticacion.update({
     where: { id: idSesion },
     data: { fechaRevocacion: ahora, motivoRevocacion: motivo },
@@ -105,7 +105,7 @@ export async function rotarSesion(
       where: { tokenHash: datos.tokenHashActual },
       include: { usuario: { select: { estado: true } } }
     });
-    if (!actual) return { error: 'Token de renovacion invalido' } as const;
+    if (!actual) return { error: 'Token de renovación inválido' } as const;
 
     if (actual.fechaRevocacion || actual.idSesionReemplazo) {
       await revocarSesionesUsuario(tx, actual.idUsuario, 'REUTILIZACION_TOKEN', ahora);
@@ -119,10 +119,10 @@ export async function rotarSesion(
         idRegistro: actual.id,
         datosNuevos: { sesionesRevocadas: true }
       });
-      return { error: 'Se detecto reutilizacion de una sesion revocada' } as const;
+      return { error: 'Se detectó reutilización de una sesión revocada' } as const;
     }
     if (!sesionEstaActiva(actual, ahora)) {
-      return { error: 'La sesion de renovacion no esta activa' } as const;
+      return { error: 'La sesión de renovación no está activa' } as const;
     }
 
     const nueva = await tx.sesionAutenticacion.create({
@@ -151,7 +151,7 @@ export async function rotarSesion(
   return resultado.sesion;
 }
 
-/** Operacion futura acotada: solo elimina sesiones revocadas, vencidas y anteriores al umbral. */
+/** Operación futura acotada: solo elimina sesiones revocadas, vencidas y anteriores al umbral. */
 export async function eliminarSesionesVencidasSeguras(
   prisma: PrismaClient,
   datos: { anterioresA: Date; limite?: number }

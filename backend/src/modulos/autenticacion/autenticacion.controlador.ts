@@ -13,7 +13,7 @@ function validarEntrada<T>(esquema: ZodSchema<T>, valor: unknown): T {
     return esquema.parse(valor);
   } catch (error) {
     if (error instanceof ZodError) {
-      throw new ErrorValidacion('Los datos enviados no son validos', error.issues.map((issue) => ({
+      throw new ErrorValidacion('Los datos enviados no son válidos', error.issues.map((issue) => ({
         campo: issue.path.join('.'), mensaje: issue.message
       })));
     }
@@ -27,7 +27,7 @@ function contexto(req: Request) {
 
 function identidad(req: Request): UsuarioAutenticado {
   if (!req.usuarioAutenticado) {
-    throw new ErrorNoAutenticado('Autenticacion requerida', 'AUTENTICACION_REQUERIDA');
+    throw new ErrorNoAutenticado('Autenticación requerida', 'AUTENTICACION_REQUERIDA');
   }
   return req.usuarioAutenticado;
 }
@@ -36,7 +36,7 @@ export async function iniciarSesionControlador(req: Request, res: Response) {
   const entrada = validarEntrada(esquemaIniciarSesion, req.body);
   const resultado = await iniciarSesion(entrada, contexto(req));
   configurarCookieRefresh(res, resultado.refreshToken);
-  return responderExito(res, 'Inicio de sesion correcto', {
+  return responderExito(res, 'Inicio de sesión correcto', {
     tokenAcceso: resultado.tokenAcceso,
     usuario: resultado.usuario
   });
@@ -46,12 +46,12 @@ export async function renovarControlador(req: Request, res: Response) {
   const token = req.cookies?.[entorno.REFRESH_TOKEN_COOKIE];
   if (typeof token !== 'string') {
     borrarCookieRefresh(res);
-    throw new ErrorNoAutenticado('No existe una sesion de renovacion');
+    throw new ErrorNoAutenticado('No existe una sesión de renovación');
   }
   try {
     const resultado = await renovarAutenticacion(token, contexto(req));
     configurarCookieRefresh(res, resultado.refreshToken);
-    return responderExito(res, 'Sesion renovada correctamente', { tokenAcceso: resultado.tokenAcceso });
+    return responderExito(res, 'Sesión renovada correctamente', { tokenAcceso: resultado.tokenAcceso });
   } catch (error) {
     borrarCookieRefresh(res);
     throw error;
@@ -66,7 +66,7 @@ export async function yoControlador(req: Request, res: Response) {
 export async function cerrarSesionControlador(req: Request, res: Response) {
   await cerrarSesionActual(identidad(req), contexto(req));
   borrarCookieRefresh(res);
-  return responderExito(res, 'Sesion cerrada correctamente');
+  return responderExito(res, 'Sesión cerrada correctamente');
 }
 
 export async function cerrarTodasControlador(req: Request, res: Response) {
@@ -79,5 +79,5 @@ export async function cambiarContrasenaControlador(req: Request, res: Response) 
   const entrada = validarEntrada(esquemaCambiarContrasena, req.body);
   await cambiarContrasena(identidad(req), entrada, contexto(req));
   borrarCookieRefresh(res);
-  return responderExito(res, 'Contrasena actualizada. Inicie sesion nuevamente');
+  return responderExito(res, 'Contraseña actualizada. Inicie sesión nuevamente');
 }

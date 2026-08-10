@@ -64,7 +64,7 @@ export function mensajeErrorUsuarios(error: unknown): string {
     if (datos?.errores?.[0]?.mensaje) return datos.errores[0].mensaje;
     if (datos?.mensaje) return datos.mensaje;
     const estado = error.response?.status;
-    if (estado === 401) return 'La sesion ya no es valida. Inicie sesion nuevamente.';
+    if (estado === 401) return 'La sesión ya no es válida. Inicie sesión nuevamente.';
     if (estado === 403) return 'No tiene permisos para realizar esta accion.';
     if (estado === 404) return 'El usuario solicitado ya no existe.';
     if (estado === 409) return 'La operacion entra en conflicto con los datos actuales.';

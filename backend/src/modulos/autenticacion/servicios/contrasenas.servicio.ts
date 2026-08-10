@@ -5,22 +5,22 @@ import { entorno } from '../../../configuracion/entorno.js';
 const MAXIMO_BYTES_BCRYPT = 72;
 const MARCADORES_INSEGUROS = /(cambiar|reemplazar|password|123456|administrador|qwerty|contrasena|contraseña|gradia)/i;
 
-/** Valida la entrada exacta; nunca recorta ni modifica silenciosamente la contrasena. */
+/** Valida la entrada exacta; nunca recorta ni modifica silenciosamente la contraseña. */
 export function validarPoliticaContrasena(contrasena: string): void {
   if (!contrasena || contrasena.trim().length === 0) {
-    throw new ErrorValidacion('La contrasena no puede estar vacia');
+    throw new ErrorValidacion('La contraseña no puede estar vacía');
   }
   if (contrasena !== contrasena.trim()) {
-    throw new ErrorValidacion('La contrasena no puede comenzar ni terminar con espacios');
+    throw new ErrorValidacion('La contraseña no puede comenzar ni terminar con espacios');
   }
   if (Array.from(contrasena).length < 12) {
-    throw new ErrorValidacion('La contrasena debe tener al menos 12 caracteres');
+    throw new ErrorValidacion('La contraseña debe tener al menos 12 caracteres');
   }
   if (Buffer.byteLength(contrasena, 'utf8') > MAXIMO_BYTES_BCRYPT) {
-    throw new ErrorValidacion('La contrasena supera el maximo de 72 bytes compatible con bcrypt');
+    throw new ErrorValidacion('La contraseña supera el máximo de 72 bytes compatible con bcrypt');
   }
   if (MARCADORES_INSEGUROS.test(contrasena)) {
-    throw new ErrorValidacion('La contrasena contiene un valor evidentemente inseguro');
+    throw new ErrorValidacion('La contraseña contiene un valor evidentemente inseguro');
   }
 }
 

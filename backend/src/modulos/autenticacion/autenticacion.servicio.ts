@@ -13,7 +13,7 @@ import { registrarAuditoriaSeguridad } from './servicios/auditoria-seguridad.ser
 import { rotarSesion } from './servicios/sesiones.servicio.js';
 
 const HASH_COMPARACION_USUARIO_INEXISTENTE = '$2b$12$C6UzMDM.H6dfI/f/IKcEe.yrxZ9DU7YOb0vV9JZb6fUMlJBWZKXrK';
-const MENSAJE_CREDENCIALES = 'Correo o contrasena incorrectos';
+const MENSAJE_CREDENCIALES = 'Correo o contraseña incorrectos';
 
 const seleccionUsuarioSeguro = {
   id: true,
@@ -25,7 +25,7 @@ const seleccionUsuarioSeguro = {
 } satisfies Prisma.UsuarioSelect;
 
 function codigoRolSeguro(codigo: string): CodigoRol {
-  if (!esCodigoRol(codigo)) throw new ErrorNoAutenticado('La cuenta no tiene un rol valido');
+  if (!esCodigoRol(codigo)) throw new ErrorNoAutenticado('La cuenta no tiene un rol válido');
   return codigo;
 }
 
@@ -58,7 +58,7 @@ export async function iniciarSesion(
   try {
     await asegurarUsuarioNoBloqueado(prisma, usuario.id);
   } catch {
-    throw new ErrorConflicto('No fue posible iniciar sesion en este momento');
+    throw new ErrorConflicto('No fue posible iniciar sesión en este momento');
   }
 
   const contrasenaCorrecta = await compararContrasena(entrada.contrasena, usuario.contrasenaHash);
@@ -126,7 +126,7 @@ export async function renovarAutenticacion(
   refreshTokenActual: string,
   contexto: ContextoSolicitud
 ): Promise<{ tokenAcceso: string; refreshToken: string }> {
-  if (!validarFormatoRefreshToken(refreshTokenActual)) throw new ErrorNoAutenticado('Sesion de renovacion invalida');
+  if (!validarFormatoRefreshToken(refreshTokenActual)) throw new ErrorNoAutenticado('Sesión de renovación inválida');
   const nuevoRefreshToken = generarRefreshToken();
   const nuevaSesion = await rotarSesion(prisma, {
     tokenHashActual: generarHashRefreshToken(refreshTokenActual),
@@ -138,7 +138,7 @@ export async function renovarAutenticacion(
   const usuario = await prisma.usuario.findUnique({
     where: { id: nuevaSesion.idUsuario }, select: { estado: true, rol: { select: { codigo: true } } }
   });
-  if (!usuario?.estado) throw new ErrorNoAutenticado('La cuenta no esta disponible');
+  if (!usuario?.estado) throw new ErrorNoAutenticado('La cuenta no está disponible');
 
   await registrarAuditoriaSeguridad(prisma, {
     accion: 'RENOVACION_SESION', modulo: 'AUTENTICACION', idUsuario: nuevaSesion.idUsuario,
@@ -222,11 +222,11 @@ export async function cambiarContrasena(
   });
   if (!usuario?.estado) throw new ErrorNoAutenticado();
   if (!(await compararContrasena(entrada.contrasenaActual, usuario.contrasenaHash))) {
-    throw new ErrorNoAutenticado('La contrasena actual no es correcta');
+    throw new ErrorNoAutenticado('La contraseña actual no es correcta');
   }
   validarPoliticaContrasena(entrada.contrasenaNueva);
   if (await compararContrasena(entrada.contrasenaNueva, usuario.contrasenaHash)) {
-    throw new ErrorConflicto('La nueva contrasena debe ser diferente de la actual');
+    throw new ErrorConflicto('La nueva contraseña debe ser diferente de la actual');
   }
   const nuevoHash = await generarHashContrasena(entrada.contrasenaNueva);
   const ahora = new Date();

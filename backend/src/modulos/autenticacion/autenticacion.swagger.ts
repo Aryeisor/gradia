@@ -186,7 +186,7 @@
  *           schema: { $ref: '#/components/schemas/InicioSesion' }
  *     responses:
  *       '200':
- *         description: Inicio de sesion correcto. Devuelve access token y usuario seguro; la cookie refresh viaja en Set-Cookie.
+ *         description: Inicio de sesión correcto. Devuelve access token y usuario seguro; la cookie refresh viaja en Set-Cookie.
  *         headers:
  *           Set-Cookie:
  *             schema: { type: string }
@@ -269,7 +269,7 @@
  *         application/json:
  *           schema: { $ref: '#/components/schemas/CambioContrasena' }
  *     responses:
- *       '200': { description: Contrasena actualizada; sesiones revocadas y cookie borrada. }
+ *       '200': { description: Contraseña actualizada; sesiones revocadas y cookie borrada. }
  *       '400': { $ref: '#/components/responses/EntradaInvalida' }
  *       '401': { $ref: '#/components/responses/AutenticacionRequerida' }
  *       '409': { $ref: '#/components/responses/Conflicto' }

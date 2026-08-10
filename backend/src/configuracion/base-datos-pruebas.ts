@@ -23,7 +23,7 @@ export function exigirUrlBasePruebas(
   try {
     nombreBase = decodeURIComponent(url.pathname.replace(/^\//, ''));
   } catch {
-    throw new Error('DATABASE_URL_TEST contiene un nombre de base invalido');
+    throw new Error('DATABASE_URL_TEST contiene un nombre de base inválido');
   }
 
   if (nombreBase !== NOMBRE_BASE_PRUEBAS) {

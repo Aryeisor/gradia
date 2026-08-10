@@ -75,10 +75,10 @@ describe('API de autenticacion', () => {
   });
 
   it.each([
-    ['contrasena incorrecta', new ErrorNoAutenticado('Correo o contrasena incorrectos'), 401],
-    ['correo inexistente', new ErrorNoAutenticado('Correo o contrasena incorrectos'), 401],
-    ['usuario inactivo', new ErrorNoAutenticado('Correo o contrasena incorrectos'), 401],
-    ['cuenta bloqueada', new ErrorConflicto('No fue posible iniciar sesion en este momento'), 409]
+    ['contraseña incorrecta', new ErrorNoAutenticado('Correo o contraseña incorrectos'), 401],
+    ['correo inexistente', new ErrorNoAutenticado('Correo o contraseña incorrectos'), 401],
+    ['usuario inactivo', new ErrorNoAutenticado('Correo o contraseña incorrectos'), 401],
+    ['cuenta bloqueada', new ErrorConflicto('No fue posible iniciar sesión en este momento'), 409]
   ])('responde de forma controlada para %s', async (_caso, error, estado) => {
     servicios.iniciarSesion.mockRejectedValueOnce(error);
     const respuesta = await request(app).post('/api/autenticacion/iniciar-sesion').send({
@@ -104,7 +104,7 @@ describe('API de autenticacion', () => {
   });
 
   it.each(['vencido', 'revocado', 'reutilizado'])('borra cookie ante refresh %s', async () => {
-    servicios.renovarAutenticacion.mockRejectedValueOnce(new ErrorNoAutenticado('Sesion de renovacion invalida'));
+    servicios.renovarAutenticacion.mockRejectedValueOnce(new ErrorNoAutenticado('Sesión de renovación inválida'));
     const respuesta = await request(app).post('/api/autenticacion/renovar')
       .set('Cookie', 'gradia_refresh_token=' + 'a'.repeat(64));
     expect(respuesta.status).toBe(401);
@@ -142,7 +142,7 @@ describe('API de autenticacion', () => {
         confirmacionContrasena: 'Nueva-Clave-Segura-2026!'
       });
     expect(respuesta.status).toBe(200);
-    expect(respuesta.body.mensaje).toContain('Inicie sesion nuevamente');
+    expect(respuesta.body.mensaje).toContain('Inicie sesión nuevamente');
     expect(servicios.cambiarContrasena).toHaveBeenCalled();
   });
 
